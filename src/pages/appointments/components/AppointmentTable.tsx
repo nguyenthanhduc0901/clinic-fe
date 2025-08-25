@@ -1,4 +1,6 @@
 import Badge from '@/components/ui/Badge'
+import { useAuthStore } from '@/lib/auth/authStore'
+import { can } from '@/lib/auth/ability'
 
 export type AppointmentRow = {
   id: string
@@ -10,9 +12,16 @@ export type AppointmentRow = {
   date?: string
 }
 
-type Props = { rows: AppointmentRow[] }
+type Props = {
+  rows: AppointmentRow[]
+  onChangeStatus?: (id: string, status: string) => void
+  onOpenReschedule?: (id: string) => void
+}
 
-export default function AppointmentTable({ rows }: Props) {
+export default function AppointmentTable({ rows, onChangeStatus, onOpenReschedule }: Props) {
+  const { permissions, user } = useAuthStore()
+  const perms = permissions.length ? permissions : user?.role?.permissions?.map((p) => p.name) ?? []
+  const showActions = can(perms, ['appointment:update'])
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full text-sm">
@@ -24,12 +33,13 @@ export default function AppointmentTable({ rows }: Props) {
             <th className="px-3 py-2">Trạng thái</th>
             <th className="px-3 py-2">Ghi chú</th>
             <th className="px-3 py-2">Ngày hẹn</th>
+            {showActions && <th className="px-3 py-2">Thao tác</th>}
           </tr>
         </thead>
         <tbody>
           {rows.length === 0 && (
             <tr className="border-t">
-              <td className="px-3 py-4 text-center" colSpan={6}>Không có dữ liệu</td>
+              <td className="px-3 py-4 text-center" colSpan={showActions ? 7 : 6}>Không có dữ liệu</td>
             </tr>
           )}
           {rows.map((r) => (
@@ -42,6 +52,29 @@ export default function AppointmentTable({ rows }: Props) {
               </td>
               <td className="px-3 py-2">{r.note ?? '-'}</td>
               <td className="px-3 py-2">{r.date ?? '-'}</td>
+              {showActions && (
+                <td className="px-3 py-2">
+                  <div className="flex items-center gap-2">
+                    {onChangeStatus && (
+                      <select
+                        className="rounded-md border px-2 py-1"
+                        defaultValue={r.status}
+                        onChange={(e) => onChangeStatus(r.id, e.target.value)}
+                      >
+                        <option value="waiting">waiting</option>
+                        <option value="confirmed">confirmed</option>
+                        <option value="checked_in">checked_in</option>
+                        <option value="in_progress">in_progress</option>
+                        <option value="completed">completed</option>
+                        <option value="cancelled">cancelled</option>
+                      </select>
+                    )}
+                    {onOpenReschedule && (
+                      <button className="btn-ghost" onClick={() => onOpenReschedule(r.id)}>Dời lịch</button>
+                    )}
+                  </div>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
