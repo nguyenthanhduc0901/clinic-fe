@@ -32,7 +32,7 @@ export const appRoutes: AppRoute[] = [
   { path: '/inventory/imports', element: <ImportsPage />, requiredPermissions: ['medicine:import'] },
   { path: '/invoices', element: <InvoicesPage />, requiredPermissions: ['invoice:read'] },
   { path: '/reports', element: <ReportsPage />, requiredPermissions: ['report:view'] },
-  { path: '/catalogs', element: <CatalogsPage />, requiredPermissions: ['catalog:read'] },
+  { path: '/catalogs', element: <CatalogsPage /> },
   { path: '/settings', element: <SettingsPage />, requiredPermissions: ['setting:manage'] },
   { path: '/users', element: <UsersPage />, requiredPermissions: ['user:read'] },
   { path: '/staff', element: <StaffPage />, requiredPermissions: ['staff:read'] },
