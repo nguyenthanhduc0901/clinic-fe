@@ -4,8 +4,8 @@ import AdminView from '@/pages/appointments/variants/AdminView'
 import ReceptionistView from '@/pages/appointments/variants/ReceptionistView'
 
 export default function AppointmentsContainer() {
-  const { user } = useAuthStore()
-  const perms = user?.role?.permissions?.map((p) => p.name) ?? []
+  const { user, permissions } = useAuthStore()
+  const perms = permissions.length ? permissions : user?.role?.permissions?.map((p) => p.name) ?? []
 
   if (can(perms, ['permission:manage'])) return <AdminView />
   if (can(perms, ['appointment:read'])) return <ReceptionistView />

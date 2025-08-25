@@ -18,18 +18,18 @@ export default function AppointmentTable({ rows }: Props) {
       <table className="min-w-full text-sm">
         <thead>
           <tr className="text-left text-slate-600">
-            <th className="px-3 py-2">Order</th>
-            <th className="px-3 py-2">Patient</th>
-            <th className="px-3 py-2">Doctor</th>
-            <th className="px-3 py-2">Status</th>
-            <th className="px-3 py-2">Note</th>
-            <th className="px-3 py-2">Date</th>
+            <th className="px-3 py-2">STT</th>
+            <th className="px-3 py-2">Bệnh nhân</th>
+            <th className="px-3 py-2">Bác sĩ</th>
+            <th className="px-3 py-2">Trạng thái</th>
+            <th className="px-3 py-2">Ghi chú</th>
+            <th className="px-3 py-2">Ngày hẹn</th>
           </tr>
         </thead>
         <tbody>
           {rows.length === 0 && (
             <tr className="border-t">
-              <td className="px-3 py-4 text-center" colSpan={6}>No data</td>
+              <td className="px-3 py-4 text-center" colSpan={6}>Không có dữ liệu</td>
             </tr>
           )}
           {rows.map((r) => (
@@ -52,6 +52,10 @@ export default function AppointmentTable({ rows }: Props) {
 
 function mapStatusColor(status?: string): 'primary' | 'success' | 'warning' | 'danger' {
   switch (status) {
+    case 'waiting':
+      return 'primary'
+    case 'confirmed':
+      return 'primary'
     case 'completed':
       return 'success'
     case 'checked_in':

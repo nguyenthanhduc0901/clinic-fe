@@ -9,7 +9,7 @@ export default function ReceptionistView() {
   const today = new Date().toISOString().slice(0, 10)
   const [filters, setFilters] = useState<Filters>({ date: today, q: '', page: 1, limit: 10 })
 
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError } = useQuery<{ items: AppointmentRow[]; total: number }>({
     queryKey: ['appointments', filters],
     queryFn: async () => {
       const params = new URLSearchParams()
@@ -19,7 +19,17 @@ export default function ReceptionistView() {
       params.set('page', String(filters.page))
       params.set('limit', String(filters.limit))
       const res = await api.get(`/appointments?${params.toString()}`)
-      return res.data as { items: AppointmentRow[]; total: number }
+      const body = res.data as { data: any[]; total: number }
+      const items: AppointmentRow[] = (body.data || []).map((a: any) => ({
+        id: String(a.id),
+        orderNumber: a.orderNumber,
+        patient: { fullName: a.patient?.fullName, phone: a.patient?.phone },
+        staff: { fullName: a.staff?.fullName },
+        status: a.status,
+        note: a.notes ?? undefined,
+        date: a.appointmentDate,
+      }))
+      return { items, total: body.total ?? 0 }
     },
   })
 
