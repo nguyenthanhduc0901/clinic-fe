@@ -1,9 +1,18 @@
 import { useSearchParams } from 'react-router-dom'
+import { useState } from 'react'
 import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { listMedicines, type Medicine, getMedicineById } from '@/lib/api/medicines'
+import { listMedicines, type Medicine, getMedicineById, deleteMedicine } from '@/lib/api/medicines'
 import { getCatalogs } from '@/lib/api/catalogs'
 import Pagination from '@/components/ui/Pagination'
+import MedicineCreateModal from '@/pages/medicines/MedicineCreateModal'
+import MedicineEditModal from '@/pages/medicines/MedicineEditModal'
+import ImportStockModal from '@/pages/medicines/ImportStockModal'
+import AdjustStockModal from '@/pages/medicines/AdjustStockModal'
+import { useAuthStore } from '@/lib/auth/authStore'
+import { can } from '@/lib/auth/ability'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from '@/components/ui/Toast'
 
 export default function MedicinesPage() {
   const [sp, setSp] = useSearchParams()
@@ -50,9 +59,34 @@ export default function MedicinesPage() {
   const total = data?.total ?? 0
   const pageCount = Math.max(1, Math.ceil(total / (limit || 20)))
 
+  const { permissions, user } = useAuthStore()
+  const perms = permissions.length ? permissions : user?.role?.permissions?.map((p: any) => p.name) ?? []
+  const canCreate = can(perms, ['medicine:create'])
+  const canEdit = can(perms, ['medicine:update'])
+  const canDelete = can(perms, ['permission:manage'])
+  const canImport = can(perms, ['medicine:import'])
+  const canAdjust = can(perms, ['permission:manage'])
+
+  const qc = useQueryClient()
+  const delMut = useMutation({
+    mutationFn: (id: number) => deleteMedicine(id),
+    onSuccess: () => {
+      toast.success('Xoá thuốc thành công')
+      qc.invalidateQueries({ queryKey: ['medicines'] })
+    },
+  })
+
+  const [createOpen, setCreateOpen] = useState(false)
+  const [edit, setEdit] = useState<{ id: number | null }>({ id: null })
+  const [importState, setImportState] = useState<{ id: number | null }>({ id: null })
+  const [adjustState, setAdjustState] = useState<{ id: number | null }>({ id: null })
+
   return (
     <div className="space-y-3">
-      <h1 className="page-title">Thuốc</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="page-title">Thuốc</h1>
+        {canCreate && <button className="btn-primary" onClick={() => setCreateOpen(true)}>Thêm thuốc</button>}
+      </div>
 
       <div className="card">
         <div className="grid grid-cols-1 md:grid-cols-6 gap-2">
@@ -89,6 +123,7 @@ export default function MedicinesPage() {
                   <th className="px-3 py-2">Giá</th>
                   <th className="px-3 py-2">Tồn kho</th>
                   <th className="px-3 py-2">Ghi chú</th>
+                  {(canEdit || canDelete || canImport || canAdjust) && <th className="px-3 py-2">Actions</th>}
                 </tr>
               </thead>
               <tbody>
@@ -99,6 +134,14 @@ export default function MedicinesPage() {
                     <td className="px-3 py-2">{formatVnd(m.price)}</td>
                     <td className="px-3 py-2">{m.quantityInStock}</td>
                     <td className="px-3 py-2 max-w-[280px] truncate" title={m.description ?? ''}>{m.description ?? '-'}</td>
+                    {(canEdit || canDelete || canImport || canAdjust) && (
+                      <td className="px-3 py-2 flex flex-wrap gap-2">
+                        {canEdit && <button className="btn-ghost" onClick={()=> setEdit({ id: m.id })}>Edit</button>}
+                        {canDelete && <button className="btn-ghost" onClick={()=> window.confirm('Xoá thuốc này?') && delMut.mutate(m.id)}>Delete</button>}
+                        {canImport && <button className="btn-ghost" onClick={()=> setImportState({ id: m.id })}>Import</button>}
+                        {canAdjust && <button className="btn-ghost" onClick={()=> setAdjustState({ id: m.id })}>Adjust</button>}
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>
@@ -112,6 +155,11 @@ export default function MedicinesPage() {
 
       {/* Detail drawer */}
       {!!sp.get('detailId') && <MedicineDetail id={Number(sp.get('detailId'))} onClose={()=> setSp((p)=>{ p.delete('detailId'); return p }, { replace:true })} />}
+
+      {canCreate && <MedicineCreateModal open={createOpen} onClose={()=> setCreateOpen(false)} />}
+      {canEdit && edit.id != null && <MedicineEditModal open={!!edit.id} onClose={()=> setEdit({ id: null })} id={edit.id!} />}
+      {canImport && importState.id != null && <ImportStockModal open={!!importState.id} onClose={()=> setImportState({ id: null })} id={importState.id!} />}
+      {canAdjust && adjustState.id != null && <AdjustStockModal open={!!adjustState.id} onClose={()=> setAdjustState({ id: null })} id={adjustState.id!} />}
     </div>
   )
 }
