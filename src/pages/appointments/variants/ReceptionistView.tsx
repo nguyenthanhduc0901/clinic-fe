@@ -65,7 +65,7 @@ export default function ReceptionistView() {
     <div className="space-y-3">
       <h1 className="page-title">Appointments - Receptionist</h1>
       <div className="card">
-        <AppointmentFilters variant="basic" value={filters} onChange={setFilters} />
+        <AppointmentFilters value={filters} onChange={setFilters} />
       </div>
       <div className="card">
         {isLoading && <div>Loading...</div>}

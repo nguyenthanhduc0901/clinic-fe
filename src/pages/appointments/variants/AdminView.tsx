@@ -39,7 +39,7 @@ export default function AdminView() {
     <div className="space-y-3">
       <h1 className="page-title">Appointments - Admin</h1>
       <div className="card">
-        <AppointmentFilters variant="advanced" value={filters} onChange={setFilters} />
+        <AppointmentFilters value={filters} onChange={setFilters} />
       </div>
       <div className="card">
         {isLoading && <div>Loading...</div>}

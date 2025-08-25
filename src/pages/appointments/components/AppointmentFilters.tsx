@@ -9,12 +9,11 @@ export type Filters = {
 }
 
 type Props = {
-  variant: 'basic' | 'advanced'
   value: Filters
   onChange: (next: Filters) => void
 }
 
-export default function AppointmentFilters({ variant, value, onChange }: Props) {
+export default function AppointmentFilters({ value, onChange }: Props) {
   const [local, setLocal] = useState<Filters>(value)
   useEffect(() => setLocal(value), [value])
 
