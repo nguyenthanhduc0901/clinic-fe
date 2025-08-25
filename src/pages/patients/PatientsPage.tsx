@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import Pagination from '@/components/ui/Pagination'
 import { useSearchParams } from 'react-router-dom'
 import PatientCreateModal from '@/pages/patients/PatientCreateModal'
+import PatientEditModal from '@/pages/patients/PatientEditModal'
 import { useAuthStore } from '@/lib/auth/authStore'
 import { can } from '@/lib/auth/ability'
 
@@ -15,6 +16,7 @@ export default function PatientsPage() {
 
   const [q, setQ] = useState(qParam)
   const [open, setOpen] = useState(false)
+  const [edit, setEdit] = useState<{ id: number | null }>({ id: null })
   const { permissions, user } = useAuthStore()
   const perms = permissions.length ? permissions : user?.role?.permissions?.map((p) => p.name) ?? []
 
@@ -51,6 +53,7 @@ export default function PatientsPage() {
   const rows = data?.data ?? []
 
   const canCreate = can(perms, ['patient:create'])
+  const canEdit = can(perms, ['patient:update'])
 
   return (
     <div className="space-y-3">
@@ -86,6 +89,7 @@ export default function PatientsPage() {
                   <th className="px-3 py-2">Năm sinh</th>
                   <th className="px-3 py-2">SĐT</th>
                   <th className="px-3 py-2">Địa chỉ</th>
+                  {canEdit && <th className="px-3 py-2">Actions</th>}
                 </tr>
               </thead>
               <tbody>
@@ -98,6 +102,11 @@ export default function PatientsPage() {
                     <td className="px-3 py-2">{p.birthYear}</td>
                     <td className="px-3 py-2">{p.phone ?? '-'}</td>
                     <td className="px-3 py-2 max-w-[280px] truncate" title={p.address ?? ''}>{p.address ?? '-'}</td>
+                    {canEdit && (
+                      <td className="px-3 py-2">
+                        <button className="btn-ghost" onClick={() => setEdit({ id: p.id })}>Edit</button>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>
@@ -110,6 +119,9 @@ export default function PatientsPage() {
       </div>
 
       {canCreate && <PatientCreateModal open={open} onClose={() => setOpen(false)} />}
+      {canEdit && edit.id != null && (
+        <PatientEditModal open={!!edit.id} onClose={() => setEdit({ id: null })} id={edit.id!} />
+      )}
     </div>
   )
 }

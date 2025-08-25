@@ -28,4 +28,14 @@ export async function createPatient(payload: {
   return res.data as Patient
 }
 
+export async function getPatient(id: number) {
+  const res = await api.get(`/patients/${id}`)
+  return res.data as Patient
+}
+
+export async function updatePatient(id: number, payload: Partial<{ fullName: string; birthYear: number; gender: string; phone?: string; address?: string }>) {
+  const res = await api.put(`/patients/${id}` , payload)
+  return res.data as Patient
+}
+
 
