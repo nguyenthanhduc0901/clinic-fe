@@ -1,4 +1,4 @@
-type BadgeColor = 'primary' | 'success' | 'warning' | 'danger'
+type BadgeColor = 'primary' | 'success' | 'warning' | 'danger' | 'indigo'
 type Props = {
   children: React.ReactNode
   color?: BadgeColor
@@ -10,6 +10,7 @@ export default function Badge({ children, color = 'primary' }: Props) {
     success: 'bg-green-600 text-white',
     warning: 'bg-yellow-500 text-white',
     danger: 'bg-red-600 text-white',
+    indigo: 'bg-indigo-600 text-white',
   }
   return <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs ${colorMap[color]}`}>{children}</span>
 }

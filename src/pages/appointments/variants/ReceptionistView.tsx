@@ -66,7 +66,8 @@ export default function ReceptionistView() {
 
   const { permissions, user } = useAuthStore()
   const perms = permissions.length ? permissions : user?.role?.permissions?.map((p: any) => p.name) ?? []
-  const canAssign = can(perms, ['appointment:update']) && can(perms, ['staff:read'])
+  const showAssign = can(perms, ['appointment:update'])
+  const canReadStaff = can(perms, ['staff:read'])
 
   const [assignState, setAssignState] = useState<{ id: number | null }>({ id: null })
   const assignMutation = useMutation({
@@ -92,7 +93,7 @@ export default function ReceptionistView() {
             rows={data?.items ?? []}
             onChangeStatus={(id, status) => statusMutation.mutate({ id: Number(id), status })}
             onOpenReschedule={(id) => setReschedule({ id: Number(id) })}
-            onOpenAssignDoctor={canAssign ? (id) => setAssignState({ id: Number(id) }) : undefined}
+            onOpenAssignDoctor={showAssign ? (id) => setAssignState({ id: Number(id) }) : undefined}
           />
         )}
         <div className="mt-3">
@@ -107,7 +108,7 @@ export default function ReceptionistView() {
       <AssignDoctorModal
         open={!!assignState.id}
         onClose={() => setAssignState({ id: null })}
-        canReadStaff={can(perms, ['staff:read'])}
+        canReadStaff={canReadStaff}
         loading={assignMutation.isPending}
         onAssign={(staffId) => assignState.id && assignMutation.mutate({ id: assignState.id, staffId })}
       />

@@ -24,7 +24,7 @@ export function AutocompleteInput({ label, placeholder, value, onChange, fetchOp
 	const [selected, setSelected] = useState<AutocompleteOption | null>(null)
 	const wrapperRef = useRef<HTMLDivElement>(null)
 
-	const debouncedQuery = useDebounce(searchQuery, 250)
+	const debouncedQuery = useDebounce(searchQuery, 350)
 
 	const { data, isLoading } = useQuery({
 		queryKey: [...queryKey, debouncedQuery],

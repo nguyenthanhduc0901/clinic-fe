@@ -37,3 +37,24 @@ Appointments (read-only):
 
 Dashboard summary:
 - Calls GET `/appointments/today/summary?date=YYYY-MM-DD` to display today's counts
+
+Medical Records:
+- Route `/medical-records` (permission `medical_record:read`)
+- Filters: patient, doctor (autocomplete), dateFrom, dateTo, status, page/limit (persisted in URL)
+- Actions: View detail (GET `/medical-records/:id`), Export PDF (GET `/medical-records/:id/export.pdf`)
+
+Appointments — Assign Doctor:
+- Permission required: `appointment:update` (and `staff:read` to search doctors)
+- In Appointments table, click “Assign Doctor” → modal opens
+- Search doctor by name/email/phone (debounced ~350ms) → select
+- Click “Gán bác sĩ” to assign, or “Bỏ gán” to unassign
+- API: PATCH `/appointments/:id/assign-doctor` with `{ staffId: number|null }`
+- After success: list refetches and shows updated doctor
+
+Invoices:
+- Route `/invoices` (permission `invoice:read`)
+- Filters: status, date, page/limit
+- Actions (permission `invoice:update`):
+  - pending → Pay (chọn paymentMethod: cash/card/transfer, notes), Cancel (reason?)
+  - paid → Refund (reason?)
+- Detail: modal hiển thị invoice + patient/doctor + prescriptions
