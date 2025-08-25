@@ -16,9 +16,10 @@ type Props = {
   rows: AppointmentRow[]
   onChangeStatus?: (id: string, status: string) => void
   onOpenReschedule?: (id: string) => void
+  onOpenAssignDoctor?: (id: string) => void
 }
 
-export default function AppointmentTable({ rows, onChangeStatus, onOpenReschedule }: Props) {
+export default function AppointmentTable({ rows, onChangeStatus, onOpenReschedule, onOpenAssignDoctor }: Props) {
   const { permissions, user } = useAuthStore()
   const perms = permissions.length ? permissions : user?.role?.permissions?.map((p) => p.name) ?? []
   const showActions = can(perms, ['appointment:update'])
@@ -71,6 +72,9 @@ export default function AppointmentTable({ rows, onChangeStatus, onOpenReschedul
                     )}
                     {onOpenReschedule && (
                       <button className="btn-ghost" onClick={() => onOpenReschedule(r.id)}>Dời lịch</button>
+                    )}
+                    {onOpenAssignDoctor && (
+                      <button className="btn-ghost" onClick={() => onOpenAssignDoctor(r.id)}>Assign Doctor</button>
                     )}
                   </div>
                 </td>

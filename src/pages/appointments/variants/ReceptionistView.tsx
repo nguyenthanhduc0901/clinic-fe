@@ -5,9 +5,12 @@ import { useQuery } from '@tanstack/react-query'
 import { api } from '@/lib/api/axios'
 import Pagination from '@/components/ui/Pagination'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { updateAppointmentStatus, rescheduleAppointment } from '@/lib/api/appointments'
+import { updateAppointmentStatus, rescheduleAppointment, assignDoctor } from '@/lib/api/appointments'
 import RescheduleModal from '@/pages/appointments/components/RescheduleModal'
 import { toast } from '@/components/ui/Toast'
+import AssignDoctorModal from '@/pages/appointments/components/AssignDoctorModal'
+import { useAuthStore } from '@/lib/auth/authStore'
+import { can } from '@/lib/auth/ability'
 
 export default function ReceptionistView() {
   const today = new Date().toISOString().slice(0, 10)
@@ -61,6 +64,20 @@ export default function ReceptionistView() {
   const total = data?.total ?? 0
   const pageCount = Math.max(1, Math.ceil(total / (filters.limit || 10)))
 
+  const { permissions, user } = useAuthStore()
+  const perms = permissions.length ? permissions : user?.role?.permissions?.map((p: any) => p.name) ?? []
+  const canAssign = can(perms, ['appointment:update']) && can(perms, ['staff:read'])
+
+  const [assignState, setAssignState] = useState<{ id: number | null }>({ id: null })
+  const assignMutation = useMutation({
+    mutationFn: ({ id, staffId }: { id: number; staffId: number | null }) => assignDoctor(id, staffId),
+    onSuccess: (_, variables) => {
+      toast.success(variables.staffId ? 'Gán bác sĩ thành công' : 'Bỏ gán bác sĩ thành công')
+      qc.invalidateQueries({ queryKey: ['appointments'] })
+      setAssignState({ id: null })
+    },
+  })
+
   return (
     <div className="space-y-3">
       <h1 className="page-title">Appointments - Receptionist</h1>
@@ -75,6 +92,7 @@ export default function ReceptionistView() {
             rows={data?.items ?? []}
             onChangeStatus={(id, status) => statusMutation.mutate({ id: Number(id), status })}
             onOpenReschedule={(id) => setReschedule({ id: Number(id) })}
+            onOpenAssignDoctor={canAssign ? (id) => setAssignState({ id: Number(id) }) : undefined}
           />
         )}
         <div className="mt-3">
@@ -85,6 +103,13 @@ export default function ReceptionistView() {
         open={!!reschedule.id}
         onClose={() => setReschedule({ id: null })}
         onSubmit={(date) => reschedule.id && rescheduleMutation.mutate({ id: reschedule.id, date })}
+      />
+      <AssignDoctorModal
+        open={!!assignState.id}
+        onClose={() => setAssignState({ id: null })}
+        canReadStaff={can(perms, ['staff:read'])}
+        loading={assignMutation.isPending}
+        onAssign={(staffId) => assignState.id && assignMutation.mutate({ id: assignState.id, staffId })}
       />
     </div>
   )

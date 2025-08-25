@@ -43,4 +43,9 @@ export async function rescheduleAppointment(id: number, appointmentDate: string)
   return res.data as Appointment
 }
 
+export async function assignDoctor(id: number, staffId: number | null) {
+  const res = await api.patch(`/appointments/${id}/assign-doctor`, { staffId })
+  return res.data as Appointment
+}
+
 

@@ -1,9 +1,14 @@
 import AppointmentFilters, { type Filters } from '@/pages/appointments/components/AppointmentFilters'
 import AppointmentTable, { type AppointmentRow } from '@/pages/appointments/components/AppointmentTable'
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Pagination from '@/components/ui/Pagination'
 import { api } from '@/lib/api/axios'
+import AssignDoctorModal from '@/pages/appointments/components/AssignDoctorModal'
+import { useAuthStore } from '@/lib/auth/authStore'
+import { can } from '@/lib/auth/ability'
+import { assignDoctor } from '@/lib/api/appointments'
+import { toast } from '@/components/ui/Toast'
 
 export default function AdminView() {
   const today = new Date().toISOString().slice(0, 10)
@@ -35,6 +40,21 @@ export default function AdminView() {
   const total = data?.total ?? 0
   const pageCount = Math.max(1, Math.ceil(total / (filters.limit || 10)))
 
+  const { permissions, user } = useAuthStore()
+  const perms = permissions.length ? permissions : user?.role?.permissions?.map((p: any) => p.name) ?? []
+  const canAssign = can(perms, ['appointment:update']) && can(perms, ['staff:read'])
+
+  const qc = useQueryClient()
+  const [assignState, setAssignState] = useState<{ id: number | null }>({ id: null })
+  const assignMutation = useMutation({
+    mutationFn: ({ id, staffId }: { id: number; staffId: number | null }) => assignDoctor(id, staffId),
+    onSuccess: (_, variables) => {
+      toast.success(variables.staffId ? 'Gán bác sĩ thành công' : 'Bỏ gán bác sĩ thành công')
+      qc.invalidateQueries({ queryKey: ['appointments-admin'] })
+      setAssignState({ id: null })
+    },
+  })
+
   return (
     <div className="space-y-3">
       <h1 className="page-title">Appointments - Admin</h1>
@@ -44,11 +64,23 @@ export default function AdminView() {
       <div className="card">
         {isLoading && <div>Loading...</div>}
         {isError && <div className="text-danger">Failed to load</div>}
-        {!isLoading && !isError && <AppointmentTable rows={data?.items ?? []} />}
+        {!isLoading && !isError && (
+          <AppointmentTable
+            rows={data?.items ?? []}
+            onOpenAssignDoctor={canAssign ? (id) => setAssignState({ id: Number(id) }) : undefined}
+          />
+        )}
         <div className="mt-3">
           <Pagination page={filters.page} pageCount={pageCount} onPageChange={(p) => setFilters((f) => ({ ...f, page: p }))} />
         </div>
       </div>
+      <AssignDoctorModal
+        open={!!assignState.id}
+        onClose={() => setAssignState({ id: null })}
+        canReadStaff={can(perms, ['staff:read'])}
+        loading={assignMutation.isPending}
+        onAssign={(staffId) => assignState.id && assignMutation.mutate({ id: assignState.id, staffId })}
+      />
     </div>
   )
 }
