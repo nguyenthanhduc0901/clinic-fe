@@ -4,10 +4,13 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useAuthStore } from '@/lib/auth/authStore'
 import { getDefaultRouteForRole } from '@/lib/auth/ability'
 import { useNavigate } from 'react-router-dom'
+import { api } from '@/lib/api/axios'
+import { toast } from '@/components/ui/Toast'
 
 const schema = z.object({
   email: z.string().email(),
-  password: z.string().min(6),
+  // Bypass password constraint: accept any string (including empty)
+  password: z.string(),
 })
 
 type FormValues = z.infer<typeof schema>
@@ -24,13 +27,30 @@ const DEV_PERMS = {
   ],
 } as const
 
+const DEV_MODE = (import.meta.env.VITE_DEV_FAKE_LOGIN as string | undefined) === 'true'
+
 export default function Login() {
   const navigate = useNavigate()
   const setAuth = useAuthStore((s) => s.setAuth)
+  const setPermissions = useAuthStore((s) => s.setPermissions)
   const { register, handleSubmit, formState: { errors } } = useForm<FormValues>({ resolver: zodResolver(schema) })
 
-  const onSubmit = (_: FormValues) => {
-    // Not wired yet
+  const onSubmit = async (values: FormValues) => {
+    try {
+      const res = await api.post('/auth/login', values)
+      const { accessToken, user } = res.data
+      if (!accessToken || !user) throw new Error('Invalid login response')
+      setAuth({ token: accessToken, user })
+      // fetch permissions
+      const permsRes = await api.get('/auth/my-permissions')
+      const perms = (permsRes.data?.permissions as string[]) ?? []
+      setPermissions(perms)
+      const roleName = user?.role?.name ?? 'admin'
+      navigate(getDefaultRouteForRole(roleName as any), { replace: true })
+      toast.success('Đăng nhập thành công')
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || 'Đăng nhập thất bại')
+    }
   }
 
   function signInAs(role: keyof typeof DEV_PERMS) {
@@ -55,14 +75,16 @@ export default function Login() {
             <input type="password" className="w-full rounded-md border px-3 py-2 bg-white" {...register('password')} />
             {errors.password && <p className="text-danger text-sm mt-1">{errors.password.message}</p>}
           </div>
-          <button className="btn-primary w-full" type="submit">Sign in (mock)</button>
+          <button className="btn-primary w-full" type="submit">Sign in</button>
         </form>
 
-        <div className="mt-4 grid grid-cols-1 gap-2">
-          <button className="btn-ghost" onClick={() => signInAs('admin')}>Dev: Sign in as Admin</button>
-          <button className="btn-ghost" onClick={() => signInAs('receptionist')}>Dev: Sign in as Receptionist</button>
-          <button className="btn-ghost" onClick={() => signInAs('doctor')}>Dev: Sign in as Doctor</button>
-        </div>
+        {DEV_MODE && (
+          <div className="mt-4 grid grid-cols-1 gap-2">
+            <button className="btn-ghost" onClick={() => signInAs('admin')}>Dev: Sign in as Admin</button>
+            <button className="btn-ghost" onClick={() => signInAs('receptionist')}>Dev: Sign in as Receptionist</button>
+            <button className="btn-ghost" onClick={() => signInAs('doctor')}>Dev: Sign in as Doctor</button>
+          </div>
+        )}
       </div>
     </div>
   )

@@ -6,8 +6,8 @@ import Topbar from './Topbar'
 import { useState } from 'react'
 
 export default function AppShell() {
-  const { user } = useAuthStore()
-  const perms = user?.role?.permissions?.map((p) => p.name) ?? []
+  const { user, permissions } = useAuthStore()
+  const perms = permissions.length ? permissions : user?.role?.permissions?.map((p) => p.name) ?? []
   const { pathname } = useLocation()
   const [open, setOpen] = useState(false)
 

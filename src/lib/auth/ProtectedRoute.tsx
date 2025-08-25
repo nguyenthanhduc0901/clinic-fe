@@ -10,10 +10,10 @@ type Props = {
 }
 
 export default function ProtectedRoute({ requiredPermissions, children }: Props) {
-  const { token, user } = useAuthStore()
+  const { token, user, permissions } = useAuthStore()
   if (!token) return <Navigate to="/login" replace />
 
-  const userPerms = user?.role?.permissions?.map((p) => p.name) ?? []
+  const userPerms = permissions.length ? permissions : user?.role?.permissions?.map((p) => p.name) ?? []
   if (!can(userPerms, requiredPermissions)) return <ForbiddenPage />
   return <>{children}</>
 }

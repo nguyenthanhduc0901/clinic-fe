@@ -1,18 +1,44 @@
-import AppointmentFilters from '@/pages/appointments/components/AppointmentFilters'
-import AppointmentTable from '@/pages/appointments/components/AppointmentTable'
+import { useState } from 'react'
+import AppointmentFilters, { type Filters } from '@/pages/appointments/components/AppointmentFilters'
+import AppointmentTable, { type AppointmentRow } from '@/pages/appointments/components/AppointmentTable'
+import { useQuery } from '@tanstack/react-query'
+import { api } from '@/lib/api/axios'
+import Pagination from '@/components/ui/Pagination'
 
 export default function ReceptionistView() {
+  const today = new Date().toISOString().slice(0, 10)
+  const [filters, setFilters] = useState<Filters>({ date: today, q: '', page: 1, limit: 10 })
+
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['appointments', filters],
+    queryFn: async () => {
+      const params = new URLSearchParams()
+      if (filters.date) params.set('date', filters.date)
+      if (filters.q) params.set('q', filters.q)
+      if (filters.status) params.set('status', filters.status)
+      params.set('page', String(filters.page))
+      params.set('limit', String(filters.limit))
+      const res = await api.get(`/appointments?${params.toString()}`)
+      return res.data as { items: AppointmentRow[]; total: number }
+    },
+  })
+
+  const total = data?.total ?? 0
+  const pageCount = Math.max(1, Math.ceil(total / (filters.limit || 10)))
+
   return (
     <div className="space-y-3">
       <h1 className="page-title">Appointments - Receptionist</h1>
       <div className="card">
-        <AppointmentFilters variant="basic" />
+        <AppointmentFilters variant="basic" value={filters} onChange={setFilters} />
       </div>
       <div className="card">
-        <div className="mb-2 flex justify-end">
-          <button className="btn-primary">Quick Create Appointment</button>
+        {isLoading && <div>Loading...</div>}
+        {isError && <div className="text-danger">Failed to load</div>}
+        {!isLoading && !isError && <AppointmentTable rows={data?.items ?? []} />}
+        <div className="mt-3">
+          <Pagination page={filters.page} pageCount={pageCount} onPageChange={(p) => setFilters((f) => ({ ...f, page: p }))} />
         </div>
-        <AppointmentTable />
       </div>
     </div>
   )

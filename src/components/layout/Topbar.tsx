@@ -1,10 +1,12 @@
 import { useAuthStore } from '@/lib/auth/authStore'
 import { MagnifyingGlassIcon, Bars3Icon } from '@heroicons/react/24/outline'
+import { useNavigate } from 'react-router-dom'
 
 type Props = { onToggleSidebar?: () => void }
 
 export default function Topbar({ onToggleSidebar }: Props) {
   const { user, clear } = useAuthStore()
+  const navigate = useNavigate()
   return (
     <header className="sticky top-0 z-10 border-b bg-white/80 backdrop-blur dark:bg-slate-900/80">
       <div className="flex h-14 items-center justify-between px-4">
@@ -19,7 +21,15 @@ export default function Topbar({ onToggleSidebar }: Props) {
         </div>
         <div className="flex items-center gap-3 text-sm">
           <span className="text-slate-600 dark:text-slate-300">{user?.email}</span>
-          <button className="btn-ghost" onClick={clear}>Logout</button>
+          <button
+            className="btn-ghost"
+            onClick={() => {
+              clear()
+              navigate('/login', { replace: true })
+            }}
+          >
+            Logout
+          </button>
         </div>
       </div>
     </header>
