@@ -11,4 +11,14 @@ export async function listStaff(params: { page?: number; limit?: number; q?: str
   return res.data as { data: Staff[]; total: number }
 }
 
+export async function getStaff(id: number) {
+  const res = await api.get(`/staff/${id}`)
+  return res.data as any
+}
+
+export async function updateStaff(id: number, payload: Partial<{ fullName: string; gender: string; birthDate: string; address: string; avatarUrl: string }>) {
+  const res = await api.patch(`/staff/${id}`, payload)
+  return res.data as any
+}
+
 

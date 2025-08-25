@@ -68,11 +68,21 @@ export default function RolesPage() {
 							<div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-[50vh] overflow-auto">
 								{(perms.data ?? []).map((p) => (
 									<label key={p.id} className="flex items-center gap-2 text-sm">
-										<input type="checkbox" defaultChecked={selected.permissions?.some((x)=> x.id === p.id)} onChange={(e)=> {
-											const current = new Set(selected.permissions?.map((x)=> x.id) ?? [])
-											if (e.target.checked) current.add(p.id); else current.delete(p.id)
-											setSelected({ ...selected, permissions: Array.from(current).map((id)=> ({ id, name: (perms.data ?? []).find((x)=> x.id===id)?.name || '' })) })
-										}} />
+										<input
+											type="checkbox"
+											checked={Boolean(selected.permissions?.some((x)=> x.id === p.id))}
+											onChange={(e)=> {
+												setSelected((prev) => {
+													if (!prev) return prev
+													const current = new Set(prev.permissions?.map((x)=> x.id) ?? [])
+													if (e.target.checked) current.add(p.id); else current.delete(p.id)
+													return {
+														...prev,
+														permissions: Array.from(current).map((id)=> ({ id, name: (perms.data ?? []).find((x)=> x.id===id)?.name || '' }))
+													}
+												})
+											}}
+										/>
 										<span>{p.name}</span>
 									</label>
 								))}
