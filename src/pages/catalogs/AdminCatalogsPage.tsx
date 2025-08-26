@@ -24,9 +24,9 @@ export default function AdminCatalogsPage() {
 			<h1 className="page-title">Quản trị Catalogs</h1>
 			<div className="card">
 				<div className="flex gap-2">
-					<button className={`btn-ghost ${tab==='units'?'font-medium':''}`} onClick={()=> setSp((p)=> { p.set('tab','units'); p.set('page','1'); return p }, { replace:true })}>Units</button>
-					<button className={`btn-ghost ${tab==='usage'?'font-medium':''}`} onClick={()=> setSp((p)=> { p.set('tab','usage'); p.set('page','1'); return p }, { replace:true })}>Usage Instructions</button>
-					<button className={`btn-ghost ${tab==='disease'?'font-medium':''}`} onClick={()=> setSp((p)=> { p.set('tab','disease'); p.set('page','1'); return p }, { replace:true })}>Disease Types</button>
+					<button className={`btn-ghost ${tab==='units'?'font-medium':''}`} onClick={()=> setSp((p)=> { p.set('tab','units'); p.set('page','1'); return p }, { replace:true })}>Đơn vị</button>
+					<button className={`btn-ghost ${tab==='usage'?'font-medium':''}`} onClick={()=> setSp((p)=> { p.set('tab','usage'); p.set('page','1'); return p }, { replace:true })}>Hướng dẫn sử dụng</button>
+					<button className={`btn-ghost ${tab==='disease'?'font-medium':''}`} onClick={()=> setSp((p)=> { p.set('tab','disease'); p.set('page','1'); return p }, { replace:true })}>Nhóm bệnh</button>
 				</div>
 			</div>
 			{tab === 'units' && <UnitsTab page={page} limit={limit} onChangePage={(p)=> setSp((q)=> { q.set('page', String(p)); return q }, { replace:true })} />}
@@ -52,7 +52,7 @@ function UnitsTab({ page, limit, onChangePage }: { page: number; limit: number; 
 	return (
 		<div className="card">
 			<div className="flex items-center justify-between">
-				<h2 className="font-medium">Units</h2>
+				<h2 className="font-medium">Đơn vị</h2>
 				<button className="btn-primary" onClick={()=> setCreateOpen(true)}>Thêm mới</button>
 			</div>
 			<div className="mb-2">
@@ -65,11 +65,11 @@ function UnitsTab({ page, limit, onChangePage }: { page: number; limit: number; 
 					<table className="min-w-full text-sm">
 						<thead>
 							<tr className="text-left text-slate-600">
-								<th className="px-3 py-2">Id</th>
-								<th className="px-3 py-2">Name</th>
-								<th className="px-3 py-2">Description</th>
-								<th className="px-3 py-2">UpdatedAt</th>
-								<th className="px-3 py-2">Actions</th>
+								<th className="px-3 py-2">Mã</th>
+								<th className="px-3 py-2">Tên</th>
+								<th className="px-3 py-2">Mô tả</th>
+								<th className="px-3 py-2">Cập nhật</th>
+								<th className="px-3 py-2">Thao tác</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -94,12 +94,12 @@ function UnitsTab({ page, limit, onChangePage }: { page: number; limit: number; 
 			</div>
 
 			{createOpen && (
-				<Modal open onClose={()=> setCreateOpen(false)} title="Thêm Unit">
+				<Modal open onClose={()=> setCreateOpen(false)} title="Thêm đơn vị">
 					<UnitForm onSubmit={(v)=> createMut.mutate(v)} onClose={()=> setCreateOpen(false)} pending={createMut.isPending} />
 				</Modal>
 			)}
 			{edit && (
-				<Modal open onClose={()=> setEdit(null)} title={`Sửa Unit #${edit.id}`}>
+				<Modal open onClose={()=> setEdit(null)} title={`Sửa đơn vị #${edit.id}`}>
 					<UnitForm initial={{ name: edit.name, description: edit.description ?? '' }} onSubmit={(v)=> updateMut.mutate({ id: edit.id, payload: v })} onClose={()=> setEdit(null)} pending={updateMut.isPending} />
 				</Modal>
 			)}
@@ -113,11 +113,11 @@ function UnitForm({ initial, onSubmit, onClose, pending }: { initial?: any; onSu
 	return (
 		<form className="space-y-3" onSubmit={(e)=> { e.preventDefault(); onSubmit({ name, description: desc || undefined }) }}>
 			<div>
-				<label className="block text-sm mb-1" htmlFor="u-name">Name</label>
+				<label className="block text-sm mb-1" htmlFor="u-name">Tên</label>
 				<input id="u-name" className="w-full rounded-md border px-3 py-2" value={name} onChange={(e)=> setName(e.target.value)} required aria-invalid={!name ? true : undefined} />
 			</div>
 			<div>
-				<label className="block text-sm mb-1" htmlFor="u-desc">Description</label>
+				<label className="block text-sm mb-1" htmlFor="u-desc">Mô tả</label>
 				<textarea id="u-desc" className="w-full rounded-md border px-3 py-2" rows={3} value={desc} onChange={(e)=> setDesc(e.target.value)} />
 			</div>
 			<div className="text-right">
@@ -145,7 +145,7 @@ function UsageTab({ page, limit, onChangePage }: { page: number; limit: number; 
 	return (
 		<div className="card">
 			<div className="flex items-center justify-between">
-				<h2 className="font-medium">Usage Instructions</h2>
+				<h2 className="font-medium">Hướng dẫn sử dụng</h2>
 				<button className="btn-primary" onClick={()=> setCreateOpen(true)}>Thêm mới</button>
 			</div>
 			<div className="mb-2">
@@ -158,11 +158,11 @@ function UsageTab({ page, limit, onChangePage }: { page: number; limit: number; 
 					<table className="min-w-full text-sm">
 						<thead>
 							<tr className="text-left text-slate-600">
-								<th className="px-3 py-2">Id</th>
-								<th className="px-3 py-2">Instruction</th>
-								<th className="px-3 py-2">Description</th>
-								<th className="px-3 py-2">UpdatedAt</th>
-								<th className="px-3 py-2">Actions</th>
+								<th className="px-3 py-2">Mã</th>
+								<th className="px-3 py-2">Hướng dẫn</th>
+								<th className="px-3 py-2">Mô tả</th>
+								<th className="px-3 py-2">Cập nhật</th>
+								<th className="px-3 py-2">Thao tác</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -187,12 +187,12 @@ function UsageTab({ page, limit, onChangePage }: { page: number; limit: number; 
 			</div>
 
 			{createOpen && (
-				<Modal open onClose={()=> setCreateOpen(false)} title="Thêm Usage Instruction">
+				<Modal open onClose={()=> setCreateOpen(false)} title="Thêm hướng dẫn sử dụng">
 					<UsageForm onSubmit={(v)=> createMut.mutate(v)} onClose={()=> setCreateOpen(false)} pending={createMut.isPending} />
 				</Modal>
 			)}
 			{edit && (
-				<Modal open onClose={()=> setEdit(null)} title={`Sửa Usage #${edit.id}`}>
+				<Modal open onClose={()=> setEdit(null)} title={`Sửa hướng dẫn #${edit.id}`}>
 					<UsageForm initial={{ instruction: edit.instruction, description: edit.description ?? '' }} onSubmit={(v)=> updateMut.mutate({ id: edit.id, payload: v })} onClose={()=> setEdit(null)} pending={updateMut.isPending} />
 				</Modal>
 			)}
@@ -206,11 +206,11 @@ function UsageForm({ initial, onSubmit, onClose, pending }: { initial?: any; onS
 	return (
 		<form className="space-y-3" onSubmit={(e)=> { e.preventDefault(); onSubmit({ instruction, description: desc || undefined }) }}>
 			<div>
-				<label className="block text-sm mb-1" htmlFor="i-name">Instruction</label>
+				<label className="block text-sm mb-1" htmlFor="i-name">Hướng dẫn</label>
 				<input id="i-name" className="w-full rounded-md border px-3 py-2" value={instruction} onChange={(e)=> setInstruction(e.target.value)} required aria-invalid={!instruction ? true : undefined} />
 			</div>
 			<div>
-				<label className="block text-sm mb-1" htmlFor="i-desc">Description</label>
+				<label className="block text-sm mb-1" htmlFor="i-desc">Mô tả</label>
 				<textarea id="i-desc" className="w-full rounded-md border px-3 py-2" rows={3} value={desc} onChange={(e)=> setDesc(e.target.value)} />
 			</div>
 			<div className="text-right">
@@ -238,7 +238,7 @@ function DiseaseTab({ page, limit, onChangePage }: { page: number; limit: number
 	return (
 		<div className="card">
 			<div className="flex items-center justify-between">
-				<h2 className="font-medium">Disease Types</h2>
+				<h2 className="font-medium">Nhóm bệnh</h2>
 				<button className="btn-primary" onClick={()=> setCreateOpen(true)}>Thêm mới</button>
 			</div>
 			<div className="mb-2">
@@ -251,11 +251,11 @@ function DiseaseTab({ page, limit, onChangePage }: { page: number; limit: number
 					<table className="min-w-full text-sm">
 						<thead>
 							<tr className="text-left text-slate-600">
-								<th className="px-3 py-2">Id</th>
-								<th className="px-3 py-2">Name</th>
-								<th className="px-3 py-2">Description</th>
-								<th className="px-3 py-2">UpdatedAt</th>
-								<th className="px-3 py-2">Actions</th>
+								<th className="px-3 py-2">Mã</th>
+								<th className="px-3 py-2">Tên</th>
+								<th className="px-3 py-2">Mô tả</th>
+								<th className="px-3 py-2">Cập nhật</th>
+								<th className="px-3 py-2">Thao tác</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -280,12 +280,12 @@ function DiseaseTab({ page, limit, onChangePage }: { page: number; limit: number
 			</div>
 
 			{createOpen && (
-				<Modal open onClose={()=> setCreateOpen(false)} title="Thêm Disease Type">
+				<Modal open onClose={()=> setCreateOpen(false)} title="Thêm nhóm bệnh">
 					<DiseaseForm onSubmit={(v)=> createMut.mutate(v)} onClose={()=> setCreateOpen(false)} pending={createMut.isPending} />
 				</Modal>
 			)}
 			{edit && (
-				<Modal open onClose={()=> setEdit(null)} title={`Sửa Disease #${edit.id}`}>
+				<Modal open onClose={()=> setEdit(null)} title={`Sửa nhóm bệnh #${edit.id}`}>
 					<DiseaseForm initial={{ name: edit.name, description: edit.description ?? '' }} onSubmit={(v)=> updateMut.mutate({ id: edit.id, payload: v })} onClose={()=> setEdit(null)} pending={updateMut.isPending} />
 				</Modal>
 			)}
@@ -299,11 +299,11 @@ function DiseaseForm({ initial, onSubmit, onClose, pending }: { initial?: any; o
 	return (
 		<form className="space-y-3" onSubmit={(e)=> { e.preventDefault(); onSubmit({ name, description: desc || undefined }) }}>
 			<div>
-				<label className="block text-sm mb-1" htmlFor="d-name">Name</label>
+				<label className="block text-sm mb-1" htmlFor="d-name">Tên</label>
 				<input id="d-name" className="w-full rounded-md border px-3 py-2" value={name} onChange={(e)=> setName(e.target.value)} required aria-invalid={!name ? true : undefined} />
 			</div>
 			<div>
-				<label className="block text-sm mb-1" htmlFor="d-desc">Description</label>
+				<label className="block text-sm mb-1" htmlFor="d-desc">Mô tả</label>
 				<textarea id="d-desc" className="w-full rounded-md border px-3 py-2" rows={3} value={desc} onChange={(e)=> setDesc(e.target.value)} />
 			</div>
 			<div className="text-right">

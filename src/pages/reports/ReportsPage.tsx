@@ -90,7 +90,7 @@ function RevenueTab() {
 							{chart==='line' ? (
 								<LineChart data={grouped} margin={{ top: 10, right: 20, bottom: 0, left: 0 }}>
 									<CartesianGrid strokeDasharray="3 3" />
-									<XAxis dataKey="label" tick={{ fontSize: 12 }} />
+									<XAxis dataKey="label" tick={{ fontSize: 12 }} tickFormatter={(v)=> formatDateLabel(String(v))} />
 									<YAxis tick={{ fontSize: 12 }} />
 									<Tooltip />
 									<Legend />
@@ -101,7 +101,7 @@ function RevenueTab() {
 							) : chart==='bar' ? (
 								<BarChart data={grouped} margin={{ top: 10, right: 20, bottom: 0, left: 0 }}>
 									<CartesianGrid strokeDasharray="3 3" />
-									<XAxis dataKey="label" tick={{ fontSize: 12 }} />
+									<XAxis dataKey="label" tick={{ fontSize: 12 }} tickFormatter={(v)=> formatDateLabel(String(v))} />
 									<YAxis tick={{ fontSize: 12 }} />
 									<Tooltip />
 									<Legend />
@@ -112,7 +112,7 @@ function RevenueTab() {
 							) : (
 								<AreaChart data={grouped} margin={{ top: 10, right: 20, bottom: 0, left: 0 }}>
 									<CartesianGrid strokeDasharray="3 3" />
-									<XAxis dataKey="label" tick={{ fontSize: 12 }} />
+									<XAxis dataKey="label" tick={{ fontSize: 12 }} tickFormatter={(v)=> formatDateLabel(String(v))} />
 									<YAxis tick={{ fontSize: 12 }} />
 									<Tooltip />
 									<Legend />
@@ -136,7 +136,7 @@ function RevenueTab() {
 						<tbody>
 							{grouped.map((r) => (
 								<tr key={r.label} className="border-t">
-									<td className="px-3 py-2">{r.label}</td>
+									<td className="px-3 py-2">{formatDateLabel(r.label)}</td>
 									<td className="px-3 py-2 text-right">{r.count}</td>
 									<td className="px-3 py-2 text-right">{formatVnd(r.exam)}</td>
 									<td className="px-3 py-2 text-right">{formatVnd(r.med)}</td>
@@ -290,6 +290,13 @@ function getWeekNumber(date: Date) {
 	const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1))
 	const weekNo = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7)
 	return weekNo
+}
+
+function formatDateLabel(label: string) {
+	const date = new Date(label)
+	const month = date.getMonth() + 1
+	const day = date.getDate()
+	return `${day}/${month}`
 }
 
 const PIE_COLORS = ['#1f77b4','#ff7f0e','#2ca02c','#d62728','#9467bd','#8c564b','#e377c2','#7f7f7f','#bcbd22','#17becf']

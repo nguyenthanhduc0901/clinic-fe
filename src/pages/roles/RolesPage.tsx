@@ -21,7 +21,7 @@ export default function RolesPage() {
 		<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 			<div className="space-y-3">
 				<div className="flex items-center justify-between">
-					<h1 className="page-title">Roles</h1>
+					<h1 className="page-title">Vai trò</h1>
 					<button className="btn-primary" onClick={()=> setCreateOpen(true)}>Thêm role</button>
 				</div>
 				<div className="card">
@@ -32,10 +32,10 @@ export default function RolesPage() {
 							<table className="min-w-full text-sm">
 								<thead>
 									<tr className="text-left text-slate-600">
-										<th className="px-3 py-2">Name</th>
-										<th className="px-3 py-2">Description</th>
-										<th className="px-3 py-2">#Perms</th>
-										<th className="px-3 py-2">Actions</th>
+										<th className="px-3 py-2">Tên</th>
+										<th className="px-3 py-2">Mô tả</th>
+										<th className="px-3 py-2">Số quyền</th>
+										<th className="px-3 py-2">Thao tác</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -45,8 +45,8 @@ export default function RolesPage() {
 											<td className="px-3 py-2">{r.description ?? '-'}</td>
 											<td className="px-3 py-2">{r.permissions?.length ?? 0}</td>
 											<td className="px-3 py-2 flex gap-2">
-												<button className="btn-ghost" onClick={()=> setEdit(r)}>Edit</button>
-												<button className="btn-ghost" onClick={()=> window.confirm('Xoá role này?') && delMut.mutate(r.id)}>Delete</button>
+												<button className="btn-ghost" onClick={()=> setEdit(r)}>Sửa</button>
+												<button className="btn-ghost" onClick={()=> window.confirm('Xoá role này?') && delMut.mutate(r.id)}>Xoá</button>
 											</td>
 										</tr>
 									))}
@@ -88,7 +88,7 @@ export default function RolesPage() {
 								))}
 							</div>
 							<div className="text-right">
-								<button className="btn" onClick={()=> setPermsMut.mutate({ id: selected.id, permissionIds: selected.permissions?.map((x)=> x.id) ?? [] })}>Save</button>
+								<button className="btn" onClick={()=> setPermsMut.mutate({ id: selected.id, permissionIds: selected.permissions?.map((x)=> x.id) ?? [] })}>Lưu</button>
 							</div>
 						</div>
 					)}
