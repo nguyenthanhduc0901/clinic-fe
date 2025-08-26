@@ -33,3 +33,4 @@ export function mapMedicineUsageRow(row: Record<string, string>) {
 		times: Number(row['Số lần kê']),
 	}
 }
+

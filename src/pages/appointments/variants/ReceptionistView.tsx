@@ -7,6 +7,7 @@ import Pagination from '@/components/ui/Pagination'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { updateAppointmentStatus, rescheduleAppointment, assignDoctor } from '@/lib/api/appointments'
 import RescheduleModal from '@/pages/appointments/components/RescheduleModal'
+import CreateMedicalRecordModal from '@/pages/medical-records/components/CreateMedicalRecordModal'
 import { toast } from '@/components/ui/Toast'
 import AssignDoctorModal from '@/pages/appointments/components/AssignDoctorModal'
 import { useAuthStore } from '@/lib/auth/authStore'
@@ -56,18 +57,21 @@ export default function ReceptionistView() {
       setReschedule({ id: null })
     },
     onError: (err: any) => {
-      if (err?.response?.status === 409) toast.error('Có thay đổi đồng thời, vui lòng thử lại.')
+      if (err?.response?.status === 409) toast.error('Khung giờ đã được đặt bởi thao tác khác. Vui lòng chọn giờ khác.')
     },
   })
 
   const [reschedule, setReschedule] = useState<{ id: number | null }>({ id: null })
   const total = data?.total ?? 0
   const pageCount = Math.max(1, Math.ceil(total / (filters.limit || 10)))
+  const [createMr, setCreateMr] = useState<{ appointmentId: number | null }>({ appointmentId: null })
 
   const { permissions, user } = useAuthStore()
   const perms = permissions.length ? permissions : user?.role?.permissions?.map((p: any) => p.name) ?? []
   const showAssign = can(perms, ['appointment:update'])
   const canReadStaff = can(perms, ['staff:read'])
+  const isDoctor = (user as any)?.role?.name === 'doctor'
+  const canCreateMr = isDoctor && can(perms, ['medical_record:create'])
 
   const [assignState, setAssignState] = useState<{ id: number | null }>({ id: null })
   const assignMutation = useMutation({
@@ -93,6 +97,7 @@ export default function ReceptionistView() {
             rows={data?.items ?? []}
             onChangeStatus={(id, status) => statusMutation.mutate({ id: Number(id), status })}
             onOpenReschedule={(id) => setReschedule({ id: Number(id) })}
+            onCreateMedicalRecord={canCreateMr ? (id) => setCreateMr({ appointmentId: Number(id) }) : undefined}
             onOpenAssignDoctor={showAssign ? (id) => setAssignState({ id: Number(id) }) : undefined}
           />
         )}
@@ -112,6 +117,13 @@ export default function ReceptionistView() {
         loading={assignMutation.isPending}
         onAssign={(staffId) => assignState.id && assignMutation.mutate({ id: assignState.id, staffId })}
       />
+      {canCreateMr && (
+        <CreateMedicalRecordModal
+          open={!!createMr.appointmentId}
+          appointmentId={createMr.appointmentId}
+          onClose={() => setCreateMr({ appointmentId: null })}
+        />
+      )}
     </div>
   )
 }

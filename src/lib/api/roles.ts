@@ -32,3 +32,4 @@ export async function setRolePermissions(id: number, permissionIds: number[]) {
 	const res = await api.post(`/roles/${id}/permissions`, { permissionIds })
 	return res.data as Role
 }
+

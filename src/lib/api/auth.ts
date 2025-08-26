@@ -22,3 +22,4 @@ export async function updateMyProfile(payload: Partial<{ email:string; phone:str
 	const res = await api.put('/auth/profile', payload)
 	return res.data as Profile
 }
+

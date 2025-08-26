@@ -18,3 +18,4 @@ export async function updateSetting(key: string, value: string) {
 	const res = await api.put(`/settings/${key}`, { value })
 	return res.data as Setting
 }
+

@@ -4,10 +4,14 @@ import { useQuery } from '@tanstack/react-query'
 import { listMedicalRecords, type MedicalRecord, getMedicalRecordDetail, exportMedicalRecordPdf } from '@/lib/api/medical-records'
 import { listPatients } from '@/lib/api/patients'
 import { listStaff } from '@/lib/api/staff'
+import { listMedicines } from '@/lib/api/medicines'
+import { getCatalogs } from '@/lib/api/catalogs'
 import Pagination from '@/components/ui/Pagination'
 import { useAuthStore } from '@/lib/auth/authStore'
-import { toast } from '@/components/ui/Toast'
+import { can } from '@/lib/auth/ability'
+// toast already imported above
 import { AutocompleteInput } from '@/components/ui/AutocompleteInput'
+import AttachmentsPanel from '@/pages/medical-records/components/AttachmentsPanel'
 
 export default function MedicalRecordsPage() {
   const [sp, setSp] = useSearchParams()
@@ -19,7 +23,8 @@ export default function MedicalRecordsPage() {
   const patientId = sp.get('patientId')
   const doctorIdSp = sp.get('doctorId')
 
-  const { user } = useAuthStore()
+  const { user, permissions } = useAuthStore()
+  const perms = permissions.length ? permissions : user?.role?.permissions?.map((p: any) => p.name) ?? []
   const defaultDoctorId = (user as any)?.staff?.id as number | undefined
   const doctorId = doctorIdSp ? Number(doctorIdSp) : defaultDoctorId
 
@@ -203,7 +208,7 @@ export default function MedicalRecordsPage() {
                       <span className={`inline-flex rounded-full px-2 py-0.5 text-xs ${statusColor(r.status)}`}>{r.status}</span>
                     </td>
                     <td className="px-3 py-2 flex gap-2">
-                      <button className="btn-ghost" onClick={() => setDetailId(r.id)}>Chi tiết</button>
+                      <button className="btn-ghost" onClick={() => { setDetailId(r.id); setSp((p)=> { p.set('recordId', String(r.id)); return p }, { replace: true }) }}>Chi tiết</button>
                       <button className="btn-ghost" onClick={() => onExport(r.id)}>Xuất PDF</button>
                     </td>
                   </tr>
@@ -220,11 +225,11 @@ export default function MedicalRecordsPage() {
       {/* Detail modal */}
       {detailId != null && detail.data && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/40" onClick={() => setDetailId(null)} />
-          <div className="relative z-10 w-full max-w-3xl rounded-lg bg-white dark:bg-slate-900 p-4">
+          <div className="absolute inset-0 bg-black/40" onClick={() => { setDetailId(null); setSp((p)=> { p.delete('recordId'); return p }, { replace: true }) }} />
+          <div className="relative z-10 w-full max-w-5xl rounded-lg bg-white dark:bg-slate-900 p-4">
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-lg font-medium">Chi tiết hồ sơ #{detail.data.medicalRecord.id}</h2>
-              <button className="btn-ghost" onClick={() => setDetailId(null)}>Đóng</button>
+              <button className="btn-ghost" onClick={() => { setDetailId(null); setSp((p)=> { p.delete('recordId'); return p }, { replace: true }) }}>Đóng</button>
             </div>
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div><strong>Bệnh nhân:</strong> {detail.data.medicalRecord.patient?.fullName ?? '-'}</div>
@@ -242,18 +247,21 @@ export default function MedicalRecordsPage() {
                     <th className="px-3 py-2">Thuốc</th>
                     <th className="px-3 py-2">SL</th>
                     <th className="px-3 py-2">Cách dùng</th>
+                    <th className="px-3 py-2">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {detail.data.prescriptions.map((p) => (
-                    <tr key={p.id} className="border-t">
-                      <td className="px-3 py-2">{p.medicineName ?? '-'}</td>
-                      <td className="px-3 py-2">{p.quantity}</td>
-                      <td className="px-3 py-2">{p.usageInstruction ?? '-'}</td>
-                    </tr>
+                    <PrescriptionRow key={p.id} recordId={detail.data.medicalRecord.id} p={p} canEdit={can(perms, ['medical_record:update']) || can(perms, ['prescription:*']) || can(perms, ['prescription:update']) || can(perms, ['prescription:delete'])} />
                   ))}
                 </tbody>
               </table>
+            </div>
+            <div className="mt-2">
+              <AddPrescriptionRow recordId={detail.data.medicalRecord.id} canEdit={can(perms, ['medical_record:update']) || can(perms, ['prescription:*']) || can(perms, ['prescription:create'])} />
+            </div>
+            <div className="mt-4">
+              <AttachmentsPanel recordId={detail.data.medicalRecord.id} />
             </div>
           </div>
         </div>
@@ -273,5 +281,68 @@ function statusColor(status?: string) {
   }
 }
 
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { addPrescription, removePrescription, updatePrescription } from '@/lib/api/medical-records'
+import { toast } from '@/components/ui/Toast'
 
+function PrescriptionRow({ recordId, p, canEdit }: { recordId: number; p: any; canEdit: boolean }) {
+  const qc = useQueryClient()
+  const updateMut = useMutation({ mutationFn: (payload: any) => updatePrescription(recordId, p.id, payload), onSuccess: () => { toast.success('Cập nhật đơn thuốc'); qc.invalidateQueries({ queryKey: ['medical-record', recordId] }) }, onError: (e:any)=> toast.error(e?.response?.data?.message || 'Lỗi cập nhật') })
+  const delMut = useMutation({ mutationFn: () => removePrescription(recordId, p.id), onSuccess: () => { toast.success('Xoá đơn thuốc'); qc.invalidateQueries({ queryKey: ['medical-record', recordId] }) }, onError: (e:any)=> toast.error(e?.response?.data?.message || 'Lỗi xoá') })
+  return (
+    <tr className="border-t">
+      <td className="px-3 py-2">{p.medicineName ?? '-'}</td>
+      <td className="px-3 py-2">
+        <input className="w-20 rounded-md border px-2 py-1" defaultValue={p.quantity} onBlur={(e)=> {
+          const q = Number(e.target.value)
+          if (!Number.isNaN(q) && q !== p.quantity) updateMut.mutate({ quantity: q })
+        }} disabled={!canEdit} />
+      </td>
+      <td className="px-3 py-2">{p.usageInstruction ?? '-'}</td>
+      <td className="px-3 py-2"><button className="btn-ghost" onClick={()=> delMut.mutate()} disabled={delMut.isPending || !canEdit}>Xoá</button></td>
+    </tr>
+  )
+}
 
+function AddPrescriptionRow({ recordId, canEdit }: { recordId: number; canEdit: boolean }) {
+  const qc = useQueryClient()
+  const [q, setQ] = useState('')
+  const meds = useQuery({ queryKey: ['meds-autocomplete', q], queryFn: () => listMedicines({ q, page: 1, limit: 10 }), enabled: q.length > 0 })
+  const catalogs = useQuery({ queryKey: ['catalogs'], queryFn: () => getCatalogs(), staleTime: 10 * 60 * 1000 })
+  const [form, setForm] = useState<{ medicineId?: number; quantity?: number; usageInstructionId?: number; notes?: string }>({})
+  const addMut = useMutation({ 
+    mutationFn: () => addPrescription(recordId, { 
+      medicineId: form.medicineId!, 
+      quantity: form.quantity!, 
+      usageInstructionId: form.usageInstructionId!, 
+      notes: form.notes?.trim() || undefined 
+    }), 
+    onSuccess: () => { toast.success('Thêm đơn thuốc'); qc.invalidateQueries({ queryKey: ['medical-record', recordId] }); setForm({}); setQ('') }, 
+    onError: (e:any)=> toast.error(e?.response?.data?.message || 'Lỗi thêm') 
+  })
+  const isReady = !!form.medicineId && !!form.quantity && form.quantity! > 0 && Number.isInteger(form.quantity!) && !!form.usageInstructionId
+  return (
+    <div className="grid grid-cols-4 gap-2">
+      <div>
+        <input className="w-full rounded-md border px-3 py-2" placeholder="Tìm thuốc..." value={q} onChange={(e)=> setQ(e.target.value)} disabled={!canEdit} />
+        <select className="w-full rounded-md border px-3 py-2 mt-1" value={form.medicineId || ''} onChange={(e)=> setForm((f)=> ({ ...f, medicineId: e.target.value ? Number(e.target.value) : undefined }))} disabled={!canEdit}>
+          <option value="">-- chọn thuốc --</option>
+          {(meds.data?.data ?? []).map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
+        </select>
+      </div>
+      <div>
+        <input className="w-full rounded-md border px-3 py-2" type="number" placeholder="Số lượng" value={form.quantity ?? ''} onChange={(e)=> setForm((f)=> ({ ...f, quantity: e.target.value ? Number(e.target.value) : undefined }))} disabled={!canEdit} />
+      </div>
+      <div>
+        <select className="w-full rounded-md border px-3 py-2" value={form.usageInstructionId || ''} onChange={(e)=> setForm((f)=> ({ ...f, usageInstructionId: e.target.value ? Number(e.target.value) : undefined }))} disabled={!canEdit}>
+          <option value="">-- hướng dẫn sử dụng --</option>
+          {(catalogs.data?.usageInstructions ?? []).map((u) => <option key={u.id} value={u.id}>{u.instruction}</option>)}
+        </select>
+      </div>
+      <div className="flex gap-2">
+        <input className="w-full rounded-md border px-3 py-2" placeholder="Ghi chú" value={form.notes ?? ''} onChange={(e)=> setForm((f)=> ({ ...f, notes: e.target.value }))} disabled={!canEdit} />
+        <button className="btn" onClick={()=> addMut.mutate()} disabled={addMut.isPending || !isReady || !canEdit}>Thêm dòng</button>
+      </div>
+    </div>
+  )
+}

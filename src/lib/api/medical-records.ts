@@ -54,4 +54,37 @@ export async function exportMedicalRecordPdf(id: number): Promise<Blob> {
   return res.data as Blob
 }
 
+export async function createMedicalRecord(payload: {
+  appointmentId: number
+  symptoms?: string
+  diagnosis: string
+  diseaseTypeId?: number
+  reExaminationDate?: string
+  notes?: string
+  prescriptions?: Array<{ medicineId: number; quantity: number; usageInstructionId: number; notes?: string }>
+}) {
+  const res = await api.post('/medical-records', payload)
+  return res.data as { medicalRecord: MedicalRecord; invoiceId: number }
+}
+
+export async function addPrescription(recordId: number, payload: { medicineId: number; quantity: number; usageInstructionId: number; notes?: string }) {
+  const res = await api.post(`/medical-records/${recordId}/prescriptions`, payload)
+  return res.data as Prescription
+}
+
+export async function updatePrescription(recordId: number, prescriptionId: number, payload: Partial<{ medicineId: number; quantity: number; usageInstructionId: number; notes?: string }>) {
+  const res = await api.patch(`/medical-records/${recordId}/prescriptions/${prescriptionId}`, payload)
+  return res.data as Prescription
+}
+
+export async function removePrescription(recordId: number, prescriptionId: number) {
+  const res = await api.delete(`/medical-records/${recordId}/prescriptions/${prescriptionId}`)
+  return res.data as { success: boolean }
+}
+
+export async function getInvoiceByRecord(recordId: number) {
+  const res = await api.get(`/medical-records/${recordId}/invoice`)
+  return res.data as any
+}
+
 

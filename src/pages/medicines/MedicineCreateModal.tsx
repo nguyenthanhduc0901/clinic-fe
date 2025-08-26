@@ -94,3 +94,4 @@ export default function MedicineCreateModal({ open, onClose }: Props) {
 		</Modal>
 	)
 }
+

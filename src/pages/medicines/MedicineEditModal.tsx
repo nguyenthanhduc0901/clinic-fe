@@ -106,3 +106,4 @@ export default function MedicineEditModal({ open, onClose, id }: Props) {
 		</Modal>
 	)
 }
+

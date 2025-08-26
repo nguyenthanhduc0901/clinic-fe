@@ -57,3 +57,4 @@ export async function getImport(id: number) {
 	const res = await api.get(`/inventory/imports/${id}`)
 	return res.data as MedicineImport
 }
+

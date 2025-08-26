@@ -15,3 +15,4 @@ export async function listAuditLogs(params: { table?: string; recordId?: number;
 	const res = await api.get('/audit-logs', { params })
 	return res.data as { data: AuditLog[]; page: number; limit: number }
 }
+

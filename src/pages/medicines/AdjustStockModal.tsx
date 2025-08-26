@@ -36,3 +36,4 @@ export default function AdjustStockModal({ open, onClose, id }: Props) {
 		</Modal>
 	)
 }
+

@@ -9,6 +9,7 @@ import RescheduleModal from '@/pages/appointments/components/RescheduleModal'
 import { useAuthStore } from '@/lib/auth/authStore'
 import { can } from '@/lib/auth/ability'
 import { assignDoctor, updateAppointmentStatus, rescheduleAppointment } from '@/lib/api/appointments'
+import CreateMedicalRecordModal from '@/pages/medical-records/components/CreateMedicalRecordModal'
 import { toast } from '@/components/ui/Toast'
 
 export default function AdminView() {
@@ -45,6 +46,7 @@ export default function AdminView() {
   const perms = permissions.length ? permissions : user?.role?.permissions?.map((p: any) => p.name) ?? []
   const canAssign = can(perms, ['appointment:update']) && can(perms, ['staff:read'])
   const canUpdate = can(perms, ['appointment:update'])
+  const canCreateMr = can(perms, ['medical_record:create'])
 
   const qc = useQueryClient()
   const [assignState, setAssignState] = useState<{ id: number | null }>({ id: null })
@@ -70,8 +72,12 @@ export default function AdminView() {
       qc.invalidateQueries({ queryKey: ['appointments-admin'] })
       setReschedule({ id: null })
     },
+    onError: (err: any) => {
+      if (err?.response?.status === 409) toast.error('Khung giờ đã được đặt bởi thao tác khác. Vui lòng chọn giờ khác.')
+    },
   })
   const [reschedule, setReschedule] = useState<{ id: number | null }>({ id: null })
+  const [createMr, setCreateMr] = useState<{ appointmentId: number | null }>({ appointmentId: null })
 
   return (
     <div className="space-y-3">
@@ -88,6 +94,7 @@ export default function AdminView() {
             onChangeStatus={canUpdate ? (id, status) => statusMutation.mutate({ id: Number(id), status }) : undefined}
             onOpenReschedule={canUpdate ? (id) => setReschedule({ id: Number(id) }) : undefined}
             onOpenAssignDoctor={canAssign ? (id) => setAssignState({ id: Number(id) }) : undefined}
+            onCreateMedicalRecord={canCreateMr ? (id) => setCreateMr({ appointmentId: Number(id) }) : undefined}
           />
         )}
         <div className="mt-3">
@@ -106,6 +113,13 @@ export default function AdminView() {
         onClose={() => setReschedule({ id: null })}
         onSubmit={(date) => reschedule.id && rescheduleMutation.mutate({ id: reschedule.id, date })}
       />
+      {canCreateMr && (
+        <CreateMedicalRecordModal
+          open={!!createMr.appointmentId}
+          appointmentId={createMr.appointmentId}
+          onClose={() => setCreateMr({ appointmentId: null })}
+        />
+      )}
     </div>
   )
 }
