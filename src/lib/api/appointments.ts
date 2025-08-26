@@ -48,4 +48,19 @@ export async function assignDoctor(id: number, staffId: number | null) {
   return res.data as Appointment
 }
 
+export async function createAppointment(payload: { patientId: number; appointmentDate: string; staffId?: number; notes?: string }) {
+  const res = await api.post('/appointments', payload)
+  return res.data as Appointment
+}
+
+export async function getAppointment(id: number) {
+  const res = await api.get(`/appointments/${id}`)
+  return res.data as Appointment
+}
+
+export async function deleteAppointment(id: number) {
+  const res = await api.delete(`/appointments/${id}`)
+  return res.data as { success: boolean }
+}
+
 

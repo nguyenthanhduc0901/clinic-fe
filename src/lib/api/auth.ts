@@ -23,3 +23,13 @@ export async function updateMyProfile(payload: Partial<{ email:string; phone:str
 	return res.data as Profile
 }
 
+export async function forgotPassword(email: string) {
+	const res = await api.post('/auth/forgot-password', { email })
+	return res.data as { message: string }
+}
+
+export async function resetPassword(token: string, newPassword: string) {
+	const res = await api.post('/auth/reset-password', { token, newPassword })
+	return res.data as { message: string }
+}
+

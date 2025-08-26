@@ -2,6 +2,7 @@ import { useSearchParams } from 'react-router-dom'
 import { useMemo, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { listImports, createImport, type MedicineImport } from '@/lib/api/inventory'
+import ImportDetailModal from '@/pages/inventory/ImportDetailModal'
 import Pagination from '@/components/ui/Pagination'
 import Modal from '@/components/ui/Modal'
 import { useForm } from 'react-hook-form'
@@ -24,6 +25,7 @@ export default function ImportsPage() {
 	const pageCount = Math.max(1, Math.ceil(total / (limit || 10)))
 
 	const [createOpen, setCreateOpen] = useState(false)
+	const [detailId, setDetailId] = useState<number | null>(null)
 	const qc = useQueryClient()
 	const mutation = useMutation({
 		mutationFn: (payload: any) => createImport(payload),
@@ -66,6 +68,7 @@ export default function ImportsPage() {
 									<th className="px-3 py-2">Lot</th>
 									<th className="px-3 py-2">ExpDate</th>
 									<th className="px-3 py-2">ImportedAt</th>
+									<th className="px-3 py-2">Actions</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -80,6 +83,7 @@ export default function ImportsPage() {
 										<td className="px-3 py-2">{r.lotNumber ?? '-'}</td>
 										<td className="px-3 py-2">{r.expirationDate ?? '-'}</td>
 										<td className="px-3 py-2">{r.importedAt ?? '-'}</td>
+										<td className="px-3 py-2"><button className="btn-ghost" onClick={()=> setDetailId(r.id)}>Chi tiết</button></td>
 									</tr>
 								))}
 							</tbody>
@@ -96,6 +100,10 @@ export default function ImportsPage() {
 					onClose={()=> setCreateOpen(false)}
 					onSubmit={(payload)=> mutation.mutate(payload)}
 				/>
+			)}
+
+			{detailId != null && (
+				<ImportDetailModal id={detailId} onClose={()=> setDetailId(null)} />
 			)}
 		</div>
 	)

@@ -1,6 +1,4 @@
 import Badge from '@/components/ui/Badge'
-import { useAuthStore } from '@/lib/auth/authStore'
-import { can } from '@/lib/auth/ability'
 
 export type AppointmentRow = {
   id: string
@@ -18,12 +16,12 @@ type Props = {
   onOpenReschedule?: (id: string) => void
   onOpenAssignDoctor?: (id: string) => void
   onCreateMedicalRecord?: (id: string) => void
+  onOpenDetail?: (id: string) => void
+  onDelete?: (id: string) => void
 }
 
-export default function AppointmentTable({ rows, onChangeStatus, onOpenReschedule, onOpenAssignDoctor, onCreateMedicalRecord }: Props) {
-  const { permissions, user } = useAuthStore()
-  const perms = permissions.length ? permissions : user?.role?.permissions?.map((p) => p.name) ?? []
-  const showActions = can(perms, ['appointment:update'])
+export default function AppointmentTable({ rows, onChangeStatus, onOpenReschedule, onOpenAssignDoctor, onCreateMedicalRecord, onOpenDetail, onDelete }: Props) {
+  const showActions = Boolean(onOpenDetail || onChangeStatus || onOpenReschedule || onOpenAssignDoctor || onCreateMedicalRecord || onDelete)
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full text-sm">
@@ -57,6 +55,9 @@ export default function AppointmentTable({ rows, onChangeStatus, onOpenReschedul
               {showActions && (
                 <td className="px-3 py-2">
                   <div className="flex items-center gap-2">
+                    {onOpenDetail && (
+                      <button className="btn-ghost" onClick={() => onOpenDetail(r.id)}>Xem chi tiết</button>
+                    )}
                     {onChangeStatus && (
                       <select
                         className="rounded-md border px-2 py-1"
@@ -79,6 +80,9 @@ export default function AppointmentTable({ rows, onChangeStatus, onOpenReschedul
                     )}
                     {onCreateMedicalRecord && (
                       <button className="btn-ghost" onClick={() => onCreateMedicalRecord(r.id)}>Tạo bệnh án</button>
+                    )}
+                    {onDelete && (
+                      <button className="btn-ghost text-danger" onClick={() => onDelete(r.id)}>Xoá</button>
                     )}
                   </div>
                 </td>

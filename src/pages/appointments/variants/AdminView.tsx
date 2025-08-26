@@ -8,7 +8,9 @@ import AssignDoctorModal from '@/pages/appointments/components/AssignDoctorModal
 import RescheduleModal from '@/pages/appointments/components/RescheduleModal'
 import { useAuthStore } from '@/lib/auth/authStore'
 import { can } from '@/lib/auth/ability'
-import { assignDoctor, updateAppointmentStatus, rescheduleAppointment } from '@/lib/api/appointments'
+import { assignDoctor, updateAppointmentStatus, rescheduleAppointment, deleteAppointment } from '@/lib/api/appointments'
+import AppointmentDetailDrawer from '@/pages/appointments/components/AppointmentDetailDrawer'
+import CreateAppointmentModal from '@/pages/appointments/components/CreateAppointmentModal'
 import CreateMedicalRecordModal from '@/pages/medical-records/components/CreateMedicalRecordModal'
 import { toast } from '@/components/ui/Toast'
 
@@ -78,6 +80,13 @@ export default function AdminView() {
   })
   const [reschedule, setReschedule] = useState<{ id: number | null }>({ id: null })
   const [createMr, setCreateMr] = useState<{ appointmentId: number | null }>({ appointmentId: null })
+  const [detailId, setDetailId] = useState<number | null>(null)
+  const [createOpen, setCreateOpen] = useState(false)
+  const delMut = useMutation({
+    mutationFn: (id: number) => deleteAppointment(id),
+    onSuccess: () => { toast.success('Đã xoá lịch hẹn'); qc.invalidateQueries({ queryKey: ['appointments-admin'] }) },
+    onError: (e:any)=> toast.error(e?.response?.data?.message || 'Xoá thất bại')
+  })
 
   return (
     <div className="space-y-3">
@@ -95,6 +104,8 @@ export default function AdminView() {
             onOpenReschedule={canUpdate ? (id) => setReschedule({ id: Number(id) }) : undefined}
             onOpenAssignDoctor={canAssign ? (id) => setAssignState({ id: Number(id) }) : undefined}
             onCreateMedicalRecord={canCreateMr ? (id) => setCreateMr({ appointmentId: Number(id) }) : undefined}
+            onOpenDetail={(id) => setDetailId(Number(id))}
+            onDelete={(can(perms, ['appointment:delete']) || can(perms, ['appointment:view_own'])) ? (id) => { if (confirm('Xoá lịch hẹn này?')) delMut.mutate(Number(id)) } : undefined}
           />
         )}
         <div className="mt-3">
@@ -119,6 +130,10 @@ export default function AdminView() {
           appointmentId={createMr.appointmentId}
           onClose={() => setCreateMr({ appointmentId: null })}
         />
+      )}
+      <AppointmentDetailDrawer id={detailId} onClose={()=> setDetailId(null)} />
+      {can(perms, ['appointment:create']) && (
+        <CreateAppointmentModal open={createOpen} onClose={()=> setCreateOpen(false)} onCreated={()=> qc.invalidateQueries({ queryKey: ['appointments-admin'] })} />
       )}
     </div>
   )

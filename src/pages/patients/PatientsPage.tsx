@@ -17,8 +17,8 @@ export default function PatientsPage() {
   const [q, setQ] = useState(qParam)
   const [open, setOpen] = useState(false)
   const [edit, setEdit] = useState<{ id: number | null }>({ id: null })
-  const { permissions, user } = useAuthStore()
-  const perms = permissions.length ? permissions : user?.role?.permissions?.map((p) => p.name) ?? []
+  const { permissions } = useAuthStore()
+  const perms = permissions
 
   const params = useMemo(() => ({ page: pageParam, limit: limitParam, q: qParam }), [pageParam, limitParam, qParam])
   const { data, isLoading, isError } = useQuery<{ data: Patient[]; total: number }>({

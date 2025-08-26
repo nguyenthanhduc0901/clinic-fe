@@ -3,6 +3,8 @@ import ProtectedRoute from '@/lib/auth/ProtectedRoute'
 import { appRoutes } from '@/routes/config'
 import AppShell from '@/components/layout/AppShell'
 import Login from '@/pages/auth/Login'
+import ForgotPassword from '@/pages/auth/ForgotPassword'
+import ResetPassword from '@/pages/auth/ResetPassword'
 import NotFoundPage from '@/pages/errors/NotFoundPage'
 import ForbiddenPage from '@/pages/errors/ForbiddenPage'
 
@@ -11,6 +13,8 @@ export default function AppRoutes() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route
           path="/"
           element={

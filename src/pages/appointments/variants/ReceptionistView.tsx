@@ -5,7 +5,9 @@ import { useQuery } from '@tanstack/react-query'
 import { api } from '@/lib/api/axios'
 import Pagination from '@/components/ui/Pagination'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { updateAppointmentStatus, rescheduleAppointment, assignDoctor } from '@/lib/api/appointments'
+import { updateAppointmentStatus, rescheduleAppointment, assignDoctor, deleteAppointment } from '@/lib/api/appointments'
+import AppointmentDetailDrawer from '@/pages/appointments/components/AppointmentDetailDrawer'
+import CreateAppointmentModal from '@/pages/appointments/components/CreateAppointmentModal'
 import RescheduleModal from '@/pages/appointments/components/RescheduleModal'
 import CreateMedicalRecordModal from '@/pages/medical-records/components/CreateMedicalRecordModal'
 import { toast } from '@/components/ui/Toast'
@@ -83,9 +85,22 @@ export default function ReceptionistView() {
     },
   })
 
+  const [detailId, setDetailId] = useState<number | null>(null)
+  const [createOpen, setCreateOpen] = useState(false)
+  const delMut = useMutation({
+    mutationFn: (id: number) => deleteAppointment(id),
+    onSuccess: () => { toast.success('Đã xoá lịch hẹn'); qc.invalidateQueries({ queryKey: ['appointments'] }) },
+    onError: (e:any)=> toast.error(e?.response?.data?.message || 'Xoá thất bại')
+  })
+
   return (
     <div className="space-y-3">
-      <h1 className="page-title">Appointments - Receptionist</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="page-title">Appointments - Receptionist</h1>
+        {(can(perms, ['appointment:create']) || can(perms, ['appointment:create_own'])) && (
+          <button className="btn-primary" onClick={()=> setCreateOpen(true)}>Tạo lịch hẹn</button>
+        )}
+      </div>
       <div className="card">
         <AppointmentFilters value={filters} onChange={setFilters} />
       </div>
@@ -99,6 +114,8 @@ export default function ReceptionistView() {
             onOpenReschedule={(id) => setReschedule({ id: Number(id) })}
             onCreateMedicalRecord={canCreateMr ? (id) => setCreateMr({ appointmentId: Number(id) }) : undefined}
             onOpenAssignDoctor={showAssign ? (id) => setAssignState({ id: Number(id) }) : undefined}
+            onOpenDetail={(id) => setDetailId(Number(id))}
+            onDelete={can(perms, ['appointment:delete']) ? (id) => { if (confirm('Xoá lịch hẹn này?')) delMut.mutate(Number(id)) } : undefined}
           />
         )}
         <div className="mt-3">
@@ -123,6 +140,10 @@ export default function ReceptionistView() {
           appointmentId={createMr.appointmentId}
           onClose={() => setCreateMr({ appointmentId: null })}
         />
+      )}
+      <AppointmentDetailDrawer id={detailId} onClose={()=> setDetailId(null)} />
+      {(can(perms, ['appointment:create']) || can(perms, ['appointment:create_own'])) && (
+        <CreateAppointmentModal open={createOpen} onClose={()=> setCreateOpen(false)} onCreated={()=> qc.invalidateQueries({ queryKey: ['appointments'] })} />
       )}
     </div>
   )
