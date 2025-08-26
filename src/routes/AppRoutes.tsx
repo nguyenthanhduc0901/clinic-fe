@@ -6,6 +6,7 @@ import Login from '@/pages/auth/Login'
 import ForgotPassword from '@/pages/auth/ForgotPassword'
 import ResetPassword from '@/pages/auth/ResetPassword'
 import NotFoundPage from '@/pages/errors/NotFoundPage'
+import ErrorBoundary from '@/components/app/ErrorBoundary'
 import ForbiddenPage from '@/pages/errors/ForbiddenPage'
 
 export default function AppRoutes() {
@@ -19,7 +20,9 @@ export default function AppRoutes() {
           path="/"
           element={
             <ProtectedRoute>
-              <AppShell />
+              <ErrorBoundary>
+                <AppShell />
+              </ErrorBoundary>
             </ProtectedRoute>
           }
         >

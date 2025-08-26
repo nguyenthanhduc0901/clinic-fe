@@ -59,16 +59,16 @@ export default function ImportsPage() {
 						<table className="min-w-full text-sm">
 							<thead>
 								<tr className="text-left text-slate-600">
-									<th className="px-3 py-2">ID</th>
-									<th className="px-3 py-2">Medicine</th>
-									<th className="px-3 py-2">Supplier</th>
-									<th className="px-3 py-2">Staff</th>
-									<th className="px-3 py-2">Qty</th>
-									<th className="px-3 py-2">Import Price</th>
-									<th className="px-3 py-2">Lot</th>
-									<th className="px-3 py-2">ExpDate</th>
-									<th className="px-3 py-2">ImportedAt</th>
-									<th className="px-3 py-2">Actions</th>
+									<th className="px-3 py-2">Mã</th>
+									<th className="px-3 py-2">Thuốc</th>
+									<th className="px-3 py-2">Nhà cung cấp</th>
+									<th className="px-3 py-2">Nhân viên</th>
+									<th className="px-3 py-2">Số lượng</th>
+									<th className="px-3 py-2">Giá nhập</th>
+									<th className="px-3 py-2">Lô</th>
+									<th className="px-3 py-2">HSD</th>
+									<th className="px-3 py-2">Ngày nhập</th>
+									<th className="px-3 py-2">Thao tác</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -82,7 +82,7 @@ export default function ImportsPage() {
 										<td className="px-3 py-2">{r.importPrice ?? '-'}</td>
 										<td className="px-3 py-2">{r.lotNumber ?? '-'}</td>
 										<td className="px-3 py-2">{r.expirationDate ?? '-'}</td>
-										<td className="px-3 py-2">{r.importedAt ?? '-'}</td>
+										<td className="px-3 py-2">{r.importedAt ? new Date(r.importedAt).toLocaleString('vi-VN') : '-'}</td>
 										<td className="px-3 py-2"><button className="btn-ghost" onClick={()=> setDetailId(r.id)}>Chi tiết</button></td>
 									</tr>
 								))}

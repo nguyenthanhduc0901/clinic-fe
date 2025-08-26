@@ -1,6 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { listPatients, type Patient } from '@/lib/api/patients'
 import { useState, useMemo } from 'react'
+import { SkeletonTable } from '@/components/ui/Skeleton'
+import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import Pagination from '@/components/ui/Pagination'
 import { useSearchParams } from 'react-router-dom'
 import PatientCreateModal from '@/pages/patients/PatientCreateModal'
@@ -19,12 +21,13 @@ export default function PatientsPage() {
   const qParam = sp.get('q') || ''
 
   const [q, setQ] = useState(qParam)
+  const debouncedQ = useDebouncedValue(q, 350)
   const [open, setOpen] = useState(false)
   const [edit, setEdit] = useState<{ id: number | null }>({ id: null })
   const { permissions } = useAuthStore()
   const perms = permissions
 
-  const params = useMemo(() => ({ page: pageParam, limit: limitParam, q: qParam }), [pageParam, limitParam, qParam])
+  const params = useMemo(() => ({ page: pageParam, limit: limitParam, q: debouncedQ || undefined }), [pageParam, limitParam, debouncedQ])
   const { data, isLoading, isError } = useQuery<{ data: Patient[]; total: number }>({
     queryKey: ['patients', params],
     queryFn: () => listPatients(params),
@@ -81,7 +84,7 @@ export default function PatientsPage() {
         </div>
       </div>
       <div className="card">
-        {isLoading && <div>Đang tải...</div>}
+        {isLoading && <SkeletonTable rows={6} />}
         {isError && <div className="text-danger">Tải dữ liệu thất bại</div>}
         {!isLoading && !isError && rows.length === 0 && <div>Không có dữ liệu</div>}
         {!isLoading && !isError && rows.length > 0 && (

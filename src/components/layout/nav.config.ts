@@ -18,6 +18,7 @@ export const NAV_ITEMS: NavItem[] = [
   { label: 'Invoices', to: '/invoices', icon: CurrencyDollarIcon, requiredPermissions: ['invoice:read'] },
   { label: 'Reports', to: '/reports', icon: DocumentMagnifyingGlassIcon, requiredPermissions: ['report:view'] },
   { label: 'Catalogs', to: '/catalogs', icon: FolderIcon },
+  { label: 'Admin Catalogs', to: '/admin/catalogs', icon: FolderIcon, requiredPermissions: ['permission:manage'] },
   { label: 'Audit Logs', to: '/audit-logs', icon: DocumentMagnifyingGlassIcon, requiredPermissions: ['audit_log:view'] },
   { label: 'Users', to: '/users', icon: UserGroupIcon, requiredPermissions: ['user:read'] },
   { label: 'Staff', to: '/staff', icon: UserGroupIcon, requiredPermissions: ['staff:read'] },

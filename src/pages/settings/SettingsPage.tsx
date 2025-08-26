@@ -62,6 +62,11 @@ export default function SettingsPage() {
 									<input className="w-full rounded-md border px-3 py-2" value={getVal('examination_fee')} onChange={(e)=> setVal('examination_fee', e.target.value)} />
 									<div className="mt-1 text-right"><button className="btn" onClick={()=> saveKey('examination_fee')} disabled={mut.isPending}>Save</button></div>
 								</div>
+								<div>
+									<label className="block text-sm mb-1">max_patients_per_day</label>
+									<input className="w-full rounded-md border px-3 py-2" type="number" min={0} value={getVal('max_patients_per_day')} onChange={(e)=> setVal('max_patients_per_day', e.target.value)} />
+									<div className="mt-1 text-right"><button className="btn" onClick={()=> saveKey('max_patients_per_day')} disabled={mut.isPending}>Save</button></div>
+								</div>
 							</div>
 						</section>
 					</div>

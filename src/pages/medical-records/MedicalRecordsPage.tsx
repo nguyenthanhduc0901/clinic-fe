@@ -7,6 +7,7 @@ import { listStaff } from '@/lib/api/staff'
 import { listMedicines } from '@/lib/api/medicines'
 import { getCatalogs } from '@/lib/api/catalogs'
 import Pagination from '@/components/ui/Pagination'
+import { SkeletonTable } from '@/components/ui/Skeleton'
 import { useAuthStore } from '@/lib/auth/authStore'
 import { can } from '@/lib/auth/ability'
 // toast already imported above
@@ -189,7 +190,7 @@ export default function MedicalRecordsPage() {
       </div>
 
       <div className="card">
-        {isLoading && <div>Đang tải...</div>}
+        {isLoading && <SkeletonTable rows={6} />}
         {isError && <div className="text-danger">Tải dữ liệu thất bại</div>}
         {!isLoading && !isError && (data?.data?.length ?? 0) === 0 && <div>Không có dữ liệu</div>}
         {!isLoading && !isError && (data?.data?.length ?? 0) > 0 && (

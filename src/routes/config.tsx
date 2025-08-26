@@ -2,13 +2,15 @@ import type { ReactNode } from 'react'
 import DashboardPage from '@/pages/dashboard/DashboardPage'
 import PatientsPage from '@/pages/patients/PatientsPage'
 import AppointmentsContainer from '@/pages/appointments/AppointmentsContainer'
-import MedicalRecordsPage from '@/pages/medical-records/MedicalRecordsPage'
-import MedicinesPage from '@/pages/medicines/MedicinesPage'
-import SuppliersPage from '@/pages/inventory/SuppliersPage'
-import ImportsPage from '@/pages/inventory/ImportsPage'
-import InvoicesPage from '@/pages/invoices/InvoicesPage'
-import ReportsPage from '@/pages/reports/ReportsPage'
+import { lazy, Suspense } from 'react'
+const MedicalRecordsPage = lazy(() => import('@/pages/medical-records/MedicalRecordsPage'))
+const MedicinesPage = lazy(() => import('@/pages/medicines/MedicinesPage'))
+const SuppliersPage = lazy(() => import('@/pages/inventory/SuppliersPage'))
+const ImportsPage = lazy(() => import('@/pages/inventory/ImportsPage'))
+const InvoicesPage = lazy(() => import('@/pages/invoices/InvoicesPage'))
+const ReportsPage = lazy(() => import('@/pages/reports/ReportsPage'))
 import CatalogsPage from '@/pages/catalogs/CatalogsPage'
+import AdminCatalogsPage from '@/pages/catalogs/AdminCatalogsPage'
 import SettingsPage from '@/pages/settings/SettingsPage'
 import UsersPage from '@/pages/users/UsersPage'
 import StaffPage from '@/pages/staff/StaffPage'
@@ -26,13 +28,14 @@ export const appRoutes: AppRoute[] = [
   { path: '/dashboard', element: <DashboardPage /> },
   { path: '/patients', element: <PatientsPage />, requiredPermissions: ['patient:read'] },
   { path: '/appointments', element: <AppointmentsContainer />, requiredPermissions: ['appointment:read'] },
-  { path: '/medical-records', element: <MedicalRecordsPage />, requiredPermissions: ['medical_record:read'] },
-  { path: '/medicines', element: <MedicinesPage />, requiredPermissions: ['medicine:read'] },
-  { path: '/inventory/suppliers', element: <SuppliersPage />, requiredPermissions: ['permission:manage'] },
-  { path: '/inventory/imports', element: <ImportsPage />, requiredPermissions: ['medicine:import'] },
-  { path: '/invoices', element: <InvoicesPage />, requiredPermissions: ['invoice:read'] },
-  { path: '/reports', element: <ReportsPage />, requiredPermissions: ['report:view'] },
+  { path: '/medical-records', element: <Suspense fallback={<div className="p-4">Đang tải...</div>}><MedicalRecordsPage /></Suspense>, requiredPermissions: ['medical_record:read'] },
+  { path: '/medicines', element: <Suspense fallback={<div className="p-4">Đang tải...</div>}><MedicinesPage /></Suspense>, requiredPermissions: ['medicine:read'] },
+  { path: '/inventory/suppliers', element: <Suspense fallback={<div className="p-4">Đang tải...</div>}><SuppliersPage /></Suspense>, requiredPermissions: ['permission:manage'] },
+  { path: '/inventory/imports', element: <Suspense fallback={<div className="p-4">Đang tải...</div>}><ImportsPage /></Suspense>, requiredPermissions: ['medicine:import'] },
+  { path: '/invoices', element: <Suspense fallback={<div className="p-4">Đang tải...</div>}><InvoicesPage /></Suspense>, requiredPermissions: ['invoice:read'] },
+  { path: '/reports', element: <Suspense fallback={<div className="p-4">Đang tải...</div>}><ReportsPage /></Suspense>, requiredPermissions: ['report:view'] },
   { path: '/catalogs', element: <CatalogsPage /> },
+  { path: '/admin/catalogs', element: <AdminCatalogsPage />, requiredPermissions: ['permission:manage'] },
   { path: '/settings', element: <SettingsPage />, requiredPermissions: ['setting:manage'] },
   { path: '/users', element: <UsersPage />, requiredPermissions: ['user:read'] },
   { path: '/staff', element: <StaffPage />, requiredPermissions: ['staff:read'] },

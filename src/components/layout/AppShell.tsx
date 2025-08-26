@@ -3,6 +3,7 @@ import { NAV_ITEMS } from './nav.config'
 import { can } from '@/lib/auth/ability'
 import { useAuthStore } from '@/lib/auth/authStore'
 import Topbar from './Topbar'
+import ErrorBoundary from '@/components/app/ErrorBoundary'
 import { useState } from 'react'
 
 export default function AppShell() {
@@ -63,7 +64,9 @@ export default function AppShell() {
       <div className="flex min-h-screen flex-col">
         <Topbar onToggleSidebar={() => setOpen((v) => !v)} />
         <main className="p-4">
-          <Outlet />
+          <ErrorBoundary>
+            <Outlet />
+          </ErrorBoundary>
         </main>
       </div>
     </div>
