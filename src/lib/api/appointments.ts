@@ -64,3 +64,27 @@ export async function deleteAppointment(id: number) {
 }
 
 
+export async function getTodaySummary(date: string): Promise<Record<AppointmentStatus, number>> {
+  const res = await api.get(`/appointments/today/summary`, { params: { date } })
+  const data = res.data as any
+  // Support both array [{status,count}] and record { status: count }
+  if (Array.isArray(data)) {
+    const acc: Record<AppointmentStatus, number> = {
+      waiting: 0,
+      confirmed: 0,
+      checked_in: 0,
+      in_progress: 0,
+      completed: 0,
+      cancelled: 0,
+    }
+    for (const row of data) {
+      const s = row.status as AppointmentStatus
+      const c = Number(row.count || 0)
+      if (s in acc) acc[s] = c
+    }
+    return acc
+  }
+  return data as Record<AppointmentStatus, number>
+}
+
+

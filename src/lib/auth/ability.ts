@@ -13,7 +13,7 @@ export function getDefaultRouteForRole(
     case 'doctor':
       return '/medical-records'
     case 'receptionist':
-      return '/appointments'
+      return '/dashboard'
     case 'patient':
       return '/profile'
     default:

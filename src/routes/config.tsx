@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import DashboardPage from '@/pages/dashboard/DashboardPage'
+import DashboardPage from '@/pages/dashboard/DashboardRouter'
 import PatientsPage from '@/pages/patients/PatientsPage'
 import AppointmentsContainer from '@/pages/appointments/AppointmentsContainer'
 import { lazy, Suspense } from 'react'
