@@ -4,6 +4,10 @@ import { useState, useMemo } from 'react'
 import Pagination from '@/components/ui/Pagination'
 import { useSearchParams } from 'react-router-dom'
 import PatientCreateModal from '@/pages/patients/PatientCreateModal'
+import { deletePatient, getPatientMedicalHistory } from '@/lib/api/patients'
+import { useMutation, useQuery as useQuery2, useQueryClient } from '@tanstack/react-query'
+import { toast } from '@/components/ui/Toast'
+//
 import PatientEditModal from '@/pages/patients/PatientEditModal'
 import { useAuthStore } from '@/lib/auth/authStore'
 import { can } from '@/lib/auth/ability'
@@ -54,6 +58,7 @@ export default function PatientsPage() {
 
   const canCreate = can(perms, ['patient:create'])
   const canEdit = can(perms, ['patient:update'])
+  const canDelete = can(perms, ['patient:delete'])
 
   return (
     <div className="space-y-3">
@@ -102,9 +107,11 @@ export default function PatientsPage() {
                     <td className="px-3 py-2">{p.birthYear}</td>
                     <td className="px-3 py-2">{p.phone ?? '-'}</td>
                     <td className="px-3 py-2 max-w-[280px] truncate" title={p.address ?? ''}>{p.address ?? '-'}</td>
-                    {canEdit && (
-                      <td className="px-3 py-2">
-                        <button className="btn-ghost" onClick={() => setEdit({ id: p.id })}>Edit</button>
+                    {(canEdit || canDelete) && (
+                      <td className="px-3 py-2 flex gap-2">
+                        {canEdit && <button className="btn-ghost" onClick={() => setEdit({ id: p.id })}>Edit</button>}
+                        {canDelete && <PatientDeleteButton id={p.id} />}
+                        <PatientHistoryButton id={p.id} />
                       </td>
                     )}
                   </tr>
@@ -122,6 +129,7 @@ export default function PatientsPage() {
       {canEdit && edit.id != null && (
         <PatientEditModal open={!!edit.id} onClose={() => setEdit({ id: null })} id={edit.id!} />
       )}
+      <PatientHistoryModalHolder />
     </div>
   )
 }
@@ -137,5 +145,63 @@ function genderColor(gender?: string) {
   }
 }
 
+function PatientDeleteButton({ id }: { id: number }) {
+  const qc = useQueryClient()
+  const mut = useMutation({ mutationFn: () => deletePatient(id), onSuccess: () => { toast.success('Đã xoá bệnh nhân'); qc.invalidateQueries({ queryKey: ['patients'] }) }, onError: (e:any)=> toast.error(e?.response?.data?.message || 'Xoá thất bại') })
+  return <button className="btn-ghost text-danger" onClick={()=> { if (confirm('Xoá bệnh nhân này?')) mut.mutate() }} disabled={mut.isPending}>Xoá</button>
+}
 
+function PatientHistoryButton({ id }: { id: number }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <>
+      <button className="btn-ghost" onClick={()=> setOpen(true)}>Lịch sử khám</button>
+      {open && <PatientHistoryModal id={id} onClose={()=> setOpen(false)} />}
+    </>
+  )
+}
 
+function PatientHistoryModalHolder() { return null }
+
+function PatientHistoryModal({ id, onClose }: { id: number; onClose: () => void }) {
+  const { data, isLoading, isError } = useQuery2({ queryKey: ['patient-history', id], queryFn: () => getPatientMedicalHistory(id) })
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+      <div className="relative z-10 w-full max-w-2xl rounded-lg bg-white dark:bg-slate-900 p-4">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="font-medium">Lịch sử khám (Patient #{id})</h3>
+          <button className="btn-ghost" onClick={onClose}>Đóng</button>
+        </div>
+        {isLoading && <div>Đang tải...</div>}
+        {isError && <div className="text-danger">Tải lịch sử thất bại</div>}
+        {!isLoading && !isError && (
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr className="text-left text-slate-600">
+                  <th className="px-3 py-2">ID</th>
+                  <th className="px-3 py-2">Ngày khám</th>
+                  <th className="px-3 py-2">Chẩn đoán</th>
+                  <th className="px-3 py-2">Trạng thái</th>
+                  <th className="px-3 py-2">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(data ?? []).map((r: any) => (
+                  <tr key={r.id} className="border-t">
+                    <td className="px-3 py-2">{r.id}</td>
+                    <td className="px-3 py-2">{new Date(r.examinationDate).toLocaleString('vi-VN')}</td>
+                    <td className="px-3 py-2">{r.diagnosis ?? '-'}</td>
+                    <td className="px-3 py-2">{r.status}</td>
+                    <td className="px-3 py-2"><a className="btn-ghost" href={`/medical-records?recordId=${r.id}`}>Xem hồ sơ</a></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}

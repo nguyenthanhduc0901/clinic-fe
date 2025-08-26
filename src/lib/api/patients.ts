@@ -38,4 +38,14 @@ export async function updatePatient(id: number, payload: Partial<{ fullName: str
   return res.data as Patient
 }
 
+export async function deletePatient(id: number) {
+  const res = await api.delete(`/patients/${id}`)
+  return res.data as { success: boolean }
+}
+
+export async function getPatientMedicalHistory(id: number) {
+  const res = await api.get(`/patients/${id}/medical-history`)
+  return res.data as any[]
+}
+
 

@@ -47,3 +47,8 @@ export async function exportInvoicePdf(id: number) {
 	const res = await api.get(`/invoices/${id}/export.pdf`, { responseType: 'blob' })
 	return res.data as Blob
 }
+
+export async function getInvoiceByMedicalRecord(medicalRecordId: number) {
+	const res = await api.get(`/invoices/by-medical-record/${medicalRecordId}`)
+	return res.data as any
+}

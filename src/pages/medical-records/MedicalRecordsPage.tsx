@@ -12,6 +12,7 @@ import { can } from '@/lib/auth/ability'
 // toast already imported above
 import { AutocompleteInput } from '@/components/ui/AutocompleteInput'
 import AttachmentsPanel from '@/pages/medical-records/components/AttachmentsPanel'
+import MRUpdateModal from '@/pages/medical-records/components/MRUpdateModal'
 
 export default function MedicalRecordsPage() {
   const [sp, setSp] = useSearchParams()
@@ -44,6 +45,15 @@ export default function MedicalRecordsPage() {
     enabled: detailId != null,
     queryFn: () => getMedicalRecordDetail(detailId!),
   })
+  function MRUpdateInline({ record, onUpdated }: { record: any; onUpdated: () => void }) {
+    const [open, setOpen] = useState(false)
+    return (
+      <div className="text-right">
+        <button className="btn-ghost" onClick={()=> setOpen(true)}>Sửa hồ sơ</button>
+        <MRUpdateModal id={record.id} initial={record} open={open} onClose={()=> setOpen(false)} onUpdated={onUpdated} />
+      </div>
+    )
+  }
 
   const total = data?.total ?? 0
   const pageCount = Math.max(1, Math.ceil(total / (limit || 10)))
@@ -231,6 +241,7 @@ export default function MedicalRecordsPage() {
               <h2 className="text-lg font-medium">Chi tiết hồ sơ #{detail.data.medicalRecord.id}</h2>
               <button className="btn-ghost" onClick={() => { setDetailId(null); setSp((p)=> { p.delete('recordId'); return p }, { replace: true }) }}>Đóng</button>
             </div>
+            {can(perms, ['medical_record:update']) && <MRUpdateInline record={detail.data.medicalRecord} onUpdated={()=> detail.refetch()} />}
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div><strong>Bệnh nhân:</strong> {detail.data.medicalRecord.patient?.fullName ?? '-'}</div>
               <div><strong>Bác sĩ:</strong> {detail.data.medicalRecord.doctor?.fullName ?? '-'}</div>
@@ -282,13 +293,15 @@ function statusColor(status?: string) {
 }
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { addPrescription, removePrescription, updatePrescription } from '@/lib/api/medical-records'
+import { addPrescription, removePrescription, updatePrescription, getPrescription } from '@/lib/api/medical-records'
 import { toast } from '@/components/ui/Toast'
 
 function PrescriptionRow({ recordId, p, canEdit }: { recordId: number; p: any; canEdit: boolean }) {
   const qc = useQueryClient()
   const updateMut = useMutation({ mutationFn: (payload: any) => updatePrescription(recordId, p.id, payload), onSuccess: () => { toast.success('Cập nhật đơn thuốc'); qc.invalidateQueries({ queryKey: ['medical-record', recordId] }) }, onError: (e:any)=> toast.error(e?.response?.data?.message || 'Lỗi cập nhật') })
   const delMut = useMutation({ mutationFn: () => removePrescription(recordId, p.id), onSuccess: () => { toast.success('Xoá đơn thuốc'); qc.invalidateQueries({ queryKey: ['medical-record', recordId] }) }, onError: (e:any)=> toast.error(e?.response?.data?.message || 'Lỗi xoá') })
+  const [detailOpen, setDetailOpen] = useState(false)
+  const detail = useQuery<{ data: any }>({ queryKey: ['prescription', p.id], enabled: detailOpen, queryFn: async ()=> ({ data: await getPrescription(recordId, p.id) }) })
   return (
     <tr className="border-t">
       <td className="px-3 py-2">{p.medicineName ?? '-'}</td>
@@ -299,7 +312,32 @@ function PrescriptionRow({ recordId, p, canEdit }: { recordId: number; p: any; c
         }} disabled={!canEdit} />
       </td>
       <td className="px-3 py-2">{p.usageInstruction ?? '-'}</td>
-      <td className="px-3 py-2"><button className="btn-ghost" onClick={()=> delMut.mutate()} disabled={delMut.isPending || !canEdit}>Xoá</button></td>
+      <td className="px-3 py-2 flex gap-2">
+        <button className="btn-ghost" onClick={()=> setDetailOpen(true)}>Chi tiết</button>
+        <button className="btn-ghost" onClick={()=> delMut.mutate()} disabled={delMut.isPending || !canEdit}>Xoá</button>
+        {detailOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-black/40" onClick={()=> setDetailOpen(false)} />
+            <div className="relative z-10 w-full max-w-md rounded-lg bg-white dark:bg-slate-900 p-4">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="font-medium">Chi tiết đơn thuốc #{p.id}</h4>
+                <button className="btn-ghost" onClick={()=> setDetailOpen(false)}>Đóng</button>
+              </div>
+              {detail.isLoading && <div>Đang tải...</div>}
+              {detail.isError && <div className="text-danger">Tải chi tiết thất bại</div>}
+              {!detail.isLoading && !detail.isError && detail.data && (
+                <div className="space-y-1 text-sm">
+                  <div><strong>medicineId:</strong> {detail.data.data.medicineId}</div>
+                  <div><strong>quantity:</strong> {detail.data.data.quantity}</div>
+                  <div><strong>usageInstructionId:</strong> {detail.data.data.usageInstructionId}</div>
+                  <div><strong>notes:</strong> {detail.data.data.notes ?? '-'}</div>
+                  <div><strong>createdAt:</strong> {detail.data.data.createdAt ?? '-'}</div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </td>
     </tr>
   )
 }

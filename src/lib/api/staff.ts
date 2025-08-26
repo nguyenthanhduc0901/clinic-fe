@@ -21,4 +21,19 @@ export async function updateStaff(id: number, payload: Partial<{ fullName: strin
   return res.data as any
 }
 
+export async function createStaff(payload: { userId: number; fullName: string; gender: string; birthDate: string; address?: string; avatarUrl?: string }) {
+  const res = await api.post('/staff', payload)
+  return res.data as any
+}
+
+export async function replaceStaff(id: number, payload: { fullName: string; gender: string; birthDate: string; address?: string; avatarUrl?: string }) {
+  const res = await api.put(`/staff/${id}`, payload)
+  return res.data as any
+}
+
+export async function deleteStaff(id: number) {
+  const res = await api.delete(`/staff/${id}`)
+  return res.data as { success: boolean }
+}
+
 

@@ -88,3 +88,21 @@ export async function getInvoiceByRecord(recordId: number) {
 }
 
 
+export async function updateMedicalRecord(id: number, payload: Partial<{
+  symptoms: string
+  diagnosis: string
+  diseaseTypeId: number
+  reExaminationDate: string
+  notes: string
+  status: 'pending' | 'completed' | 'cancelled'
+}>) {
+  const res = await api.patch(`/medical-records/${id}`, payload)
+  return res.data as MedicalRecord
+}
+
+export async function getPrescription(recordId: number, prescriptionId: number) {
+  const res = await api.get(`/medical-records/${recordId}/prescriptions/${prescriptionId}`)
+  return res.data as Prescription
+}
+
+
