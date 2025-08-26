@@ -9,7 +9,7 @@ const SuppliersPage = lazy(() => import('@/pages/inventory/SuppliersPage'))
 const ImportsPage = lazy(() => import('@/pages/inventory/ImportsPage'))
 const InvoicesPage = lazy(() => import('@/pages/invoices/InvoicesPage'))
 const ReportsPage = lazy(() => import('@/pages/reports/ReportsPage'))
-import CatalogsPage from '@/pages/catalogs/CatalogsPage'
+// Removed read-only Catalogs route from nav; keep admin catalogs
 import AdminCatalogsPage from '@/pages/catalogs/AdminCatalogsPage'
 import SettingsPage from '@/pages/settings/SettingsPage'
 import UsersPage from '@/pages/users/UsersPage'
@@ -34,8 +34,7 @@ export const appRoutes: AppRoute[] = [
   { path: '/inventory/imports', element: <Suspense fallback={<div className="p-4">Đang tải...</div>}><ImportsPage /></Suspense>, requiredPermissions: ['medicine:import'] },
   { path: '/invoices', element: <Suspense fallback={<div className="p-4">Đang tải...</div>}><InvoicesPage /></Suspense>, requiredPermissions: ['invoice:read'] },
   { path: '/reports', element: <Suspense fallback={<div className="p-4">Đang tải...</div>}><ReportsPage /></Suspense>, requiredPermissions: ['report:view'] },
-  { path: '/catalogs', element: <CatalogsPage /> },
-  { path: '/admin/catalogs', element: <AdminCatalogsPage />, requiredPermissions: ['permission:manage'] },
+  { path: '/catalogs', element: <AdminCatalogsPage />, requiredPermissions: ['permission:manage'] },
   { path: '/settings', element: <SettingsPage />, requiredPermissions: ['setting:manage'] },
   { path: '/users', element: <UsersPage />, requiredPermissions: ['user:read'] },
   { path: '/staff', element: <StaffPage />, requiredPermissions: ['staff:read'] },

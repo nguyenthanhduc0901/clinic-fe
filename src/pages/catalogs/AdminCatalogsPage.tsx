@@ -1,5 +1,6 @@
 import { useSearchParams } from 'react-router-dom'
 import { useState } from 'react'
+import { useDebouncedValue } from '@/hooks/useDebouncedValue'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { listUnits, createUnit, updateUnit, deleteUnit, listUsageInstructions, createUsageInstruction, updateUsageInstruction, deleteUsageInstruction, listDiseaseTypes, createDiseaseType, updateDiseaseType, deleteDiseaseType } from '@/lib/api/catalogs-admin'
 import Modal from '@/components/ui/Modal'
@@ -40,16 +41,22 @@ function UnitsTab({ page, limit, onChangePage }: { page: number; limit: number; 
 	const { data, isLoading, isError } = useQuery({ queryKey: ['catalogs-admin','units',{ page, limit }], queryFn: () => listUnits({ page, limit }) })
 	const [createOpen, setCreateOpen] = useState(false)
 	const [edit, setEdit] = useState<any | null>(null)
+    const [q, setQ] = useState('')
+    const dq = useDebouncedValue(q, 300)
 	const createMut = useMutation({ mutationFn: (v:any)=> createUnit(v), onSuccess: ()=> { toast.success('Tạo thành công'); qc.invalidateQueries({ queryKey: ['catalogs-admin','units'] }); setCreateOpen(false) }, onError: (e:any)=> toast.error(e?.response?.data?.message || 'Lỗi tạo') })
 	const updateMut = useMutation({ mutationFn: ({ id, payload }: any)=> updateUnit(id, payload), onSuccess: ()=> { toast.success('Cập nhật thành công'); qc.invalidateQueries({ queryKey: ['catalogs-admin','units'] }); setEdit(null) }, onError: (e:any)=> toast.error(e?.response?.data?.message || 'Lỗi cập nhật') })
 	const deleteMut = useMutation({ mutationFn: (id:number)=> deleteUnit(id), onSuccess: ()=> { toast.success('Xoá thành công'); qc.invalidateQueries({ queryKey: ['catalogs-admin','units'] }) }, onError: (e:any)=> toast.error(e?.response?.data?.message || 'Lỗi xoá') })
 	const total = data?.total ?? 0
 	const pageCount = Math.max(1, Math.ceil(total / (limit || 10)))
+    const rows = (data?.data ?? []).filter((u)=> u.name.toLowerCase().includes(dq.toLowerCase()) || (u.description ?? '').toLowerCase().includes(dq.toLowerCase()))
 	return (
 		<div className="card">
 			<div className="flex items-center justify-between">
 				<h2 className="font-medium">Units</h2>
 				<button className="btn-primary" onClick={()=> setCreateOpen(true)}>Thêm mới</button>
+			</div>
+			<div className="mb-2">
+				<input className="rounded-md border px-3 py-2" placeholder="Tìm theo tên/mô tả" value={q} onChange={(e)=> setQ(e.target.value)} />
 			</div>
 			{isLoading && <div>Đang tải...</div>}
 			{isError && <div className="text-danger">Tải dữ liệu thất bại</div>}
@@ -66,7 +73,7 @@ function UnitsTab({ page, limit, onChangePage }: { page: number; limit: number; 
 							</tr>
 						</thead>
 						<tbody>
-							{data!.data.map((u) => (
+							{rows.map((u) => (
 								<tr key={u.id} className="border-t">
 									<td className="px-3 py-2">{u.id}</td>
 									<td className="px-3 py-2">{u.name}</td>
@@ -127,16 +134,22 @@ function UsageTab({ page, limit, onChangePage }: { page: number; limit: number; 
 	const { data, isLoading, isError } = useQuery({ queryKey: ['catalogs-admin','usage',{ page, limit }], queryFn: () => listUsageInstructions({ page, limit }) })
 	const [createOpen, setCreateOpen] = useState(false)
 	const [edit, setEdit] = useState<any | null>(null)
+    const [q, setQ] = useState('')
+    const dq = useDebouncedValue(q, 300)
 	const createMut = useMutation({ mutationFn: (v:any)=> createUsageInstruction(v), onSuccess: ()=> { toast.success('Tạo thành công'); qc.invalidateQueries({ queryKey: ['catalogs-admin','usage'] }); setCreateOpen(false) }, onError: (e:any)=> toast.error(e?.response?.data?.message || 'Lỗi tạo') })
 	const updateMut = useMutation({ mutationFn: ({ id, payload }: any)=> updateUsageInstruction(id, payload), onSuccess: ()=> { toast.success('Cập nhật thành công'); qc.invalidateQueries({ queryKey: ['catalogs-admin','usage'] }); setEdit(null) }, onError: (e:any)=> toast.error(e?.response?.data?.message || 'Lỗi cập nhật') })
 	const deleteMut = useMutation({ mutationFn: (id:number)=> deleteUsageInstruction(id), onSuccess: ()=> { toast.success('Xoá thành công'); qc.invalidateQueries({ queryKey: ['catalogs-admin','usage'] }) }, onError: (e:any)=> toast.error(e?.response?.data?.message || 'Lỗi xoá') })
 	const total = data?.total ?? 0
 	const pageCount = Math.max(1, Math.ceil(total / (limit || 10)))
+    const rows = (data?.data ?? []).filter((u)=> u.instruction.toLowerCase().includes(dq.toLowerCase()) || (u.description ?? '').toLowerCase().includes(dq.toLowerCase()))
 	return (
 		<div className="card">
 			<div className="flex items-center justify-between">
 				<h2 className="font-medium">Usage Instructions</h2>
 				<button className="btn-primary" onClick={()=> setCreateOpen(true)}>Thêm mới</button>
+			</div>
+			<div className="mb-2">
+				<input className="rounded-md border px-3 py-2" placeholder="Tìm theo hướng dẫn/mô tả" value={q} onChange={(e)=> setQ(e.target.value)} />
 			</div>
 			{isLoading && <div>Đang tải...</div>}
 			{isError && <div className="text-danger">Tải dữ liệu thất bại</div>}
@@ -153,7 +166,7 @@ function UsageTab({ page, limit, onChangePage }: { page: number; limit: number; 
 							</tr>
 						</thead>
 						<tbody>
-							{data!.data.map((u) => (
+							{rows.map((u) => (
 								<tr key={u.id} className="border-t">
 									<td className="px-3 py-2">{u.id}</td>
 									<td className="px-3 py-2">{u.instruction}</td>
@@ -214,16 +227,22 @@ function DiseaseTab({ page, limit, onChangePage }: { page: number; limit: number
 	const { data, isLoading, isError } = useQuery({ queryKey: ['catalogs-admin','disease',{ page, limit }], queryFn: () => listDiseaseTypes({ page, limit }) })
 	const [createOpen, setCreateOpen] = useState(false)
 	const [edit, setEdit] = useState<any | null>(null)
+    const [q, setQ] = useState('')
+    const dq = useDebouncedValue(q, 300)
 	const createMut = useMutation({ mutationFn: (v:any)=> createDiseaseType(v), onSuccess: ()=> { toast.success('Tạo thành công'); qc.invalidateQueries({ queryKey: ['catalogs-admin','disease'] }); setCreateOpen(false) }, onError: (e:any)=> toast.error(e?.response?.data?.message || 'Lỗi tạo') })
 	const updateMut = useMutation({ mutationFn: ({ id, payload }: any)=> updateDiseaseType(id, payload), onSuccess: ()=> { toast.success('Cập nhật thành công'); qc.invalidateQueries({ queryKey: ['catalogs-admin','disease'] }); setEdit(null) }, onError: (e:any)=> toast.error(e?.response?.data?.message || 'Lỗi cập nhật') })
 	const deleteMut = useMutation({ mutationFn: (id:number)=> deleteDiseaseType(id), onSuccess: ()=> { toast.success('Xoá thành công'); qc.invalidateQueries({ queryKey: ['catalogs-admin','disease'] }) }, onError: (e:any)=> toast.error(e?.response?.data?.message || 'Lỗi xoá') })
 	const total = data?.total ?? 0
 	const pageCount = Math.max(1, Math.ceil(total / (limit || 10)))
+    const rows = (data?.data ?? []).filter((u)=> u.name.toLowerCase().includes(dq.toLowerCase()) || (u.description ?? '').toLowerCase().includes(dq.toLowerCase()))
 	return (
 		<div className="card">
 			<div className="flex items-center justify-between">
 				<h2 className="font-medium">Disease Types</h2>
 				<button className="btn-primary" onClick={()=> setCreateOpen(true)}>Thêm mới</button>
+			</div>
+			<div className="mb-2">
+				<input className="rounded-md border px-3 py-2" placeholder="Tìm theo tên/mô tả" value={q} onChange={(e)=> setQ(e.target.value)} />
 			</div>
 			{isLoading && <div>Đang tải...</div>}
 			{isError && <div className="text-danger">Tải dữ liệu thất bại</div>}
@@ -240,7 +259,7 @@ function DiseaseTab({ page, limit, onChangePage }: { page: number; limit: number
 							</tr>
 						</thead>
 						<tbody>
-							{data!.data.map((u) => (
+							{rows.map((u) => (
 								<tr key={u.id} className="border-t">
 									<td className="px-3 py-2">{u.id}</td>
 									<td className="px-3 py-2">{u.name}</td>
