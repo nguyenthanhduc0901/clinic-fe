@@ -121,7 +121,7 @@ export default function MedicinesPage() {
                   <th className="px-3 py-2">Giá</th>
                   <th className="px-3 py-2">Tồn kho</th>
                   <th className="px-3 py-2">Ghi chú</th>
-                  {(canDelete || canImport || canAdjust) && <th className="px-3 py-2">Actions</th>}
+                  {(canDelete || canImport || canAdjust) && <th className="px-3 py-2">Thao tác</th>}
                 </tr>
               </thead>
               <tbody>
@@ -134,9 +134,9 @@ export default function MedicinesPage() {
                     <td className="px-3 py-2 max-w-[280px] truncate" title={m.description ?? ''}>{m.description ?? '-'}</td>
                     {(canDelete || canImport || canAdjust) && (
                       <td className="px-3 py-2 flex flex-wrap gap-2">
-                        {canDelete && <button className="btn-ghost" onClick={()=> window.confirm('Xoá thuốc này?') && delMut.mutate(m.id)}>Delete</button>}
-                        {canImport && <button className="btn-ghost" onClick={()=> setImportState({ id: m.id })}>Import</button>}
-                        {canAdjust && <button className="btn-ghost" onClick={()=> setAdjustState({ id: m.id })}>Adjust</button>}
+                        {canDelete && <button className="btn-ghost" onClick={()=> window.confirm('Xoá thuốc này?') && delMut.mutate(m.id)}>Xóa</button>}
+                        {canImport && <button className="btn-ghost" onClick={()=> setImportState({ id: m.id })}>Nhập kho</button>}
+                        {canAdjust && <button className="btn-ghost" onClick={()=> setAdjustState({ id: m.id })}>Điều chỉnh số lượng</button>}
                       </td>
                     )}
                   </tr>

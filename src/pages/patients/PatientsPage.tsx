@@ -112,7 +112,7 @@ export default function PatientsPage() {
                     <td className="px-3 py-2 max-w-[280px] truncate" title={p.address ?? ''}>{p.address ?? '-'}</td>
                     {(canEdit || canDelete) && (
                       <td className="px-3 py-2 flex gap-2">
-                        {canEdit && <button className="btn-ghost" onClick={() => setEdit({ id: p.id })}>Edit</button>}
+                        {canEdit && <button className="btn-ghost" onClick={() => setEdit({ id: p.id })}>Cập nhật</button>}
                         {canDelete && <PatientDeleteButton id={p.id} />}
                         <PatientHistoryButton id={p.id} />
                       </td>

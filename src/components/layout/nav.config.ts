@@ -15,6 +15,7 @@ export const NAV_ITEMS: NavItem[] = [
   { label: 'Medicines', to: '/medicines', icon: BeakerIcon, requiredPermissions: ['medicine:read'] },
   { label: 'Inventory - Suppliers', to: '/inventory/suppliers', icon: RectangleStackIcon, requiredPermissions: ['permission:manage'] },
   { label: 'Inventory - Imports', to: '/inventory/imports', icon: RectangleStackIcon, requiredPermissions: ['medicine:import'] },
+  { label: 'Inventory - Low stock', to: '/inventory/low-stock', icon: RectangleStackIcon, requiredPermissions: ['medicine:read'] },
   { label: 'Invoices', to: '/invoices', icon: CurrencyDollarIcon, requiredPermissions: ['invoice:read'] },
   { label: 'Reports', to: '/reports', icon: DocumentMagnifyingGlassIcon, requiredPermissions: ['report:view'] },
   { label: 'Catalogs', to: '/catalogs', icon: FolderIcon, requiredPermissions: ['permission:manage'] },

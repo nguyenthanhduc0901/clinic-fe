@@ -7,6 +7,7 @@ const MedicalRecordsPage = lazy(() => import('@/pages/medical-records/MedicalRec
 const MedicinesPage = lazy(() => import('@/pages/medicines/MedicinesPage'))
 const SuppliersPage = lazy(() => import('@/pages/inventory/SuppliersPage'))
 const ImportsPage = lazy(() => import('@/pages/inventory/ImportsPage'))
+const LowStockPage = lazy(() => import('@/pages/inventory/LowStockPage'))
 const InvoicesPage = lazy(() => import('@/pages/invoices/InvoicesPage'))
 const ReportsPage = lazy(() => import('@/pages/reports/ReportsPage'))
 // Removed read-only Catalogs route from nav; keep admin catalogs
@@ -32,6 +33,7 @@ export const appRoutes: AppRoute[] = [
   { path: '/medicines', element: <Suspense fallback={<div className="p-4">Đang tải...</div>}><MedicinesPage /></Suspense>, requiredPermissions: ['medicine:read'] },
   { path: '/inventory/suppliers', element: <Suspense fallback={<div className="p-4">Đang tải...</div>}><SuppliersPage /></Suspense>, requiredPermissions: ['permission:manage'] },
   { path: '/inventory/imports', element: <Suspense fallback={<div className="p-4">Đang tải...</div>}><ImportsPage /></Suspense>, requiredPermissions: ['medicine:import'] },
+  { path: '/inventory/low-stock', element: <Suspense fallback={<div className="p-4">Đang tải...</div>}><LowStockPage /></Suspense>, requiredPermissions: ['medicine:read'] },
   { path: '/invoices', element: <Suspense fallback={<div className="p-4">Đang tải...</div>}><InvoicesPage /></Suspense>, requiredPermissions: ['invoice:read'] },
   { path: '/reports', element: <Suspense fallback={<div className="p-4">Đang tải...</div>}><ReportsPage /></Suspense>, requiredPermissions: ['report:view'] },
   { path: '/catalogs', element: <AdminCatalogsPage />, requiredPermissions: ['permission:manage'] },

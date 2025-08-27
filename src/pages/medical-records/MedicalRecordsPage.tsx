@@ -204,7 +204,7 @@ export default function MedicalRecordsPage() {
                   <th className="px-3 py-2">Bác sĩ</th>
                   <th className="px-3 py-2">Chẩn đoán</th>
                   <th className="px-3 py-2">Trạng thái</th>
-                  <th className="px-3 py-2">Actions</th>
+                  <th className="px-3 py-2">Thao tác</th>
                 </tr>
               </thead>
               <tbody>

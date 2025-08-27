@@ -68,4 +68,30 @@ export async function getImport(id: number) {
   return res.data as MedicineImport
 }
 
+// New APIs
+export async function getSupplier(id: number) {
+  const res = await api.get(`/inventory/suppliers/${id}`)
+  return res.data as Supplier
+}
+
+export async function listImportsAdvanced(params: {
+  medicineId?: number
+  supplierId?: number
+  dateFrom?: string
+  dateTo?: string
+  lotNumber?: string
+  expirationDateFrom?: string
+  expirationDateTo?: string
+  page?: number
+  limit?: number
+}) {
+  const res = await api.get('/inventory/imports', { params })
+  return res.data as { data: MedicineImport[]; total: number }
+}
+
+export async function listLowStock(params: { threshold?: number; page?: number; limit?: number }) {
+  const res = await api.get('/inventory/low-stock', { params })
+  return res.data as { data: Array<{ id: number; name: string; unit?: { id: number; name: string } | null; price: string; quantityInStock: number }>; total: number }
+}
+
 

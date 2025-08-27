@@ -36,4 +36,33 @@ export async function deleteStaff(id: number) {
   return res.data as { success: boolean }
 }
 
+// Avatar APIs
+export async function uploadStaffAvatar(
+  id: number,
+  file: File,
+  onUploadProgress?: (percent: number) => void,
+) {
+  const form = new FormData()
+  form.append('file', file)
+  const res = await api.post(`/staff/${id}/avatar`, form, {
+    headers: { /* do not set Content-Type; browser will set boundary */ },
+    onUploadProgress: (evt) => {
+      if (!evt.total) return
+      const percent = Math.round((evt.loaded / evt.total) * 100)
+      onUploadProgress?.(percent)
+    },
+  })
+  return res.data as any
+}
+
+export async function deleteStaffAvatar(id: number) {
+  const res = await api.delete(`/staff/${id}/avatar`)
+  return res.data as any
+}
+
+export async function getStaffAvatarBlob(id: number) {
+  const res = await api.get(`/staff/${id}/avatar`, { responseType: 'blob' })
+  return res.data as Blob
+}
+
 

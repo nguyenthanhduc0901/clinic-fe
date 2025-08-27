@@ -96,7 +96,7 @@ export default function ReceptionistView() {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h1 className="page-title">Appointments - Receptionist</h1>
+        <h1 className="page-title">Lịch hẹn - Lễ tân</h1>
         {(can(perms, ['appointment:create']) || can(perms, ['appointment:create_own'])) && (
           <button className="btn-primary" onClick={()=> setCreateOpen(true)}>Tạo lịch hẹn</button>
         )}
@@ -105,8 +105,8 @@ export default function ReceptionistView() {
         <AppointmentFilters value={filters} onChange={setFilters} />
       </div>
       <div className="card">
-        {isLoading && <div>Loading...</div>}
-        {isError && <div className="text-danger">Failed to load</div>}
+        {isLoading && <div>Đang tải...</div>}
+        {isError && <div className="text-danger">Tải dữ liệu thất bại</div>}
         {!isLoading && !isError && (
           <AppointmentTable
             rows={data?.items ?? []}

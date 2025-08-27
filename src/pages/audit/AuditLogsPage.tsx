@@ -52,10 +52,10 @@ export default function AuditLogsPage() {
 							<thead>
 								<tr className="text-left text-slate-600">
 									<th className="px-3 py-2">ID</th>
-									<th className="px-3 py-2">Table</th>
+									<th className="px-3 py-2">Bảng</th>
 									<th className="px-3 py-2">Record</th>
-									<th className="px-3 py-2">Action</th>
-									<th className="px-3 py-2">ChangedAt</th>
+									<th className="px-3 py-2">Hành động</th>
+									<th className="px-3 py-2">Thay đổi lúc</th>
 									<th className="px-3 py-2">UserId</th>
 									<th className="px-3 py-2">Thao tác</th>
 								</tr>

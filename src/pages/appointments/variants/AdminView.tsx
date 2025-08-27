@@ -90,13 +90,13 @@ export default function AdminView() {
 
   return (
     <div className="space-y-3">
-      <h1 className="page-title">Appointments - Admin</h1>
+      <h1 className="page-title">Lịch hẹn - Quản trị</h1>
       <div className="card">
         <AppointmentFilters value={filters} onChange={setFilters} />
       </div>
       <div className="card">
-        {isLoading && <div>Loading...</div>}
-        {isError && <div className="text-danger">Failed to load</div>}
+        {isLoading && <div>Đang tải...</div>}
+        {isError && <div className="text-danger">Tải dữ liệu thất bại</div>}
         {!isLoading && !isError && (
           <AppointmentTable
             rows={data?.items ?? []}

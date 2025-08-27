@@ -88,7 +88,7 @@ export default function DashboardDoctorPage() {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="page-title">Doctor Dashboard</h1>
+        <h1 className="page-title">Bảng điều khiển Bác sĩ</h1>
         <div className="flex items-center gap-2">
           <input className="rounded-md border px-3 py-2" type="date" value={date} onChange={(e)=> setSp((p)=>{ p.set('date', e.target.value); return p }, { replace:true })} />
           <select className="rounded-md border px-3 py-2" value={view} onChange={(e)=> setSp((p)=>{ p.set('view', e.target.value); return p }, { replace:true })}>
@@ -101,7 +101,7 @@ export default function DashboardDoctorPage() {
 
       {/* KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-        <Kpi title="Appointments hôm nay" value={String(kpiAppointments)} sub="waiting / in_progress / completed" />
+        <Kpi title="Lịch hẹn hôm nay" value={String(kpiAppointments)} sub="waiting / in_progress / completed" />
         <Kpi title="Bệnh án hoàn tất hôm nay" value={String(kpiCompletedToday)} />
         <Kpi title="Tái khám hôm nay" value={String(kpiReexamToday)} />
         <Kpi title="Đơn thuốc đã kê (lines)" value={String(kpiPrescriptionLines)} />
@@ -119,7 +119,7 @@ export default function DashboardDoctorPage() {
                   <th className="px-3 py-2">Bệnh nhân</th>
                   <th className="px-3 py-2">Trạng thái</th>
                   <th className="px-3 py-2">Ghi chú</th>
-                  <th className="px-3 py-2">Actions</th>
+                  <th className="px-3 py-2">Thao tác</th>
                 </tr>
               </thead>
               <tbody>
@@ -282,7 +282,7 @@ function MedicalRecordDrawer({ id, onClose }: { id: number; onClose: () => void 
           <div><strong>Bệnh nhân:</strong> {detail.data.medicalRecord.patient?.fullName ?? `#${detail.data.medicalRecord.patientId}`}</div>
           <div className="col-span-2"><strong>Chẩn đoán:</strong> {detail.data.medicalRecord.diagnosis ?? '-'}</div>
         </div>
-        <h3 className="mt-3 font-medium">Prescriptions</h3>
+        <h3 className="mt-3 font-medium">Đơn thuốc</h3>
         <div className="space-y-2">
           {(detail.data.prescriptions ?? []).map((p) => (
             <div key={p.id} className="grid grid-cols-5 gap-2 items-center">

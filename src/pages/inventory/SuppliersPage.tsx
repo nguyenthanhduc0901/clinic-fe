@@ -1,7 +1,7 @@
 import { useSearchParams } from 'react-router-dom'
 import { useMemo, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { listSuppliers, createSupplier, updateSupplier, deleteSupplier, type Supplier } from '@/lib/api/inventory'
+import { listSuppliers, createSupplier, updateSupplier, deleteSupplier, type Supplier, getSupplier } from '@/lib/api/inventory'
 import Pagination from '@/components/ui/Pagination'
 import Modal from '@/components/ui/Modal'
 import { useForm } from 'react-hook-form'
@@ -34,6 +34,7 @@ export default function SuppliersPage() {
 	const pageCount = Math.max(1, Math.ceil(total / (limit || 10)))
 
 	const [modal, setModal] = useState<{ mode: 'create' | 'edit' | null; supplier?: Supplier | null }>({ mode: null, supplier: null })
+	const [detailId, setDetailId] = useState<number | null>(null)
 	const qc = useQueryClient()
 	const createMut = useMutation({
 		mutationFn: (payload: Partial<Supplier> & { name: string }) => createSupplier(payload),
@@ -82,7 +83,7 @@ export default function SuppliersPage() {
 										<th className="px-3 py-2">Phone</th>
 										<th className="px-3 py-2">Email</th>
 										<th className="px-3 py-2">Địa chỉ</th>
-										{canManage && <th className="px-3 py-2">Actions</th>}
+										<th className="px-3 py-2">Thao tác</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -93,12 +94,11 @@ export default function SuppliersPage() {
 											<td className="px-3 py-2">{s.phone ?? '-'}</td>
 											<td className="px-3 py-2">{s.email ?? '-'}</td>
 											<td className="px-3 py-2 max-w-[280px] truncate" title={s.address ?? ''}>{s.address ?? '-'}</td>
-											{canManage && (
-												<td className="px-3 py-2 flex gap-2">
-													<button className="btn-ghost" onClick={()=> setModal({ mode: 'edit', supplier: s })}>Edit</button>
-													<button className="btn-ghost" onClick={()=> window.confirm('Xoá nhà cung cấp này?') && deleteMut.mutate(s.id)}>Delete</button>
-												</td>
-											)}
+											<td className="px-3 py-2 flex gap-2">
+												<button className="btn-ghost" onClick={()=> setDetailId(s.id)}>Xem chi tiết</button>
+												{canManage && <button className="btn-ghost" onClick={()=> setModal({ mode: 'edit', supplier: s })}>Cập nhật</button>}
+												{canManage && <button className="btn-ghost" onClick={()=> window.confirm('Xoá nhà cung cấp này?') && deleteMut.mutate(s.id)}>Xóa</button>}
+											</td>
 										</tr>
 									))}
 								</tbody>
@@ -118,6 +118,10 @@ export default function SuppliersPage() {
 					onClose={()=> setModal({ mode: null, supplier: null })}
 					onSubmit={(payload) => modal.mode === 'create' ? createMut.mutate(payload as any) : updateMut.mutate({ id: (modal.supplier as Supplier).id, payload })}
 				/>
+			)}
+
+			{detailId != null && (
+				<SupplierDetailDrawer id={detailId} onClose={()=> setDetailId(null)} />
 			)}
 		</div>
 	)
@@ -160,6 +164,34 @@ function SupplierModal({ mode, supplier, onClose, onSubmit }: { mode: 'create' |
 				</div>
 			</form>
 		</Modal>
+	)
+}
+
+function SupplierDetailDrawer({ id, onClose }: { id: number; onClose: () => void }) {
+	const q = useQuery({ queryKey: ['supplier', id], queryFn: () => getSupplier(id) })
+	return (
+		<div className="fixed inset-0 z-50 flex">
+			<div className="flex-1 bg-black/40" onClick={onClose} />
+			<div className="relative z-10 w-full max-w-md bg-white dark:bg-slate-900 p-4 overflow-y-auto">
+				<div className="flex items-center justify-between mb-2">
+					<h2 className="text-lg font-medium">Chi tiết NCC #{id}</h2>
+					<button className="btn-ghost" onClick={onClose}>Đóng</button>
+				</div>
+				{q.isLoading && <div>Đang tải...</div>}
+				{q.isError && <div className="text-danger">Tải dữ liệu thất bại</div>}
+				{q.data && (
+					<div className="space-y-1 text-sm">
+						<div><strong>Tên:</strong> {q.data.name}</div>
+						<div><strong>Liên hệ:</strong> {q.data.contactPerson ?? '-'}</div>
+						<div><strong>Phone:</strong> {q.data.phone ?? '-'}</div>
+						<div><strong>Email:</strong> {q.data.email ?? '-'}</div>
+						<div className="max-w-full break-words"><strong>Địa chỉ:</strong> {q.data.address ?? '-'}</div>
+						<div><strong>Created:</strong> {q.data.createdAt ?? '-'}</div>
+						<div><strong>Updated:</strong> {q.data.updatedAt ?? '-'}</div>
+					</div>
+				)}
+			</div>
+		</div>
 	)
 }
 

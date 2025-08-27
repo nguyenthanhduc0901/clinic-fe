@@ -1,7 +1,7 @@
 import { useSearchParams } from 'react-router-dom'
 import { useMemo, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { listImports, createImport, type MedicineImport } from '@/lib/api/inventory'
+import { listImportsAdvanced as listImports, createImport, type MedicineImport } from '@/lib/api/inventory'
 import ImportDetailModal from '@/pages/inventory/ImportDetailModal'
 import Pagination from '@/components/ui/Pagination'
 import Modal from '@/components/ui/Modal'
@@ -14,8 +14,13 @@ export default function ImportsPage() {
 	const limit = Number(sp.get('limit') || '10')
 	const medicineId = sp.get('medicineId')
 	const supplierId = sp.get('supplierId')
+	const dateFrom = sp.get('dateFrom')
+	const dateTo = sp.get('dateTo')
+	const lotNumber = sp.get('lotNumber')
+	const expirationDateFrom = sp.get('expirationDateFrom')
+	const expirationDateTo = sp.get('expirationDateTo')
 
-	const params = useMemo(() => ({ page, limit, medicineId: medicineId ? Number(medicineId) : undefined, supplierId: supplierId ? Number(supplierId) : undefined }), [page, limit, medicineId, supplierId])
+	const params = useMemo(() => ({ page, limit, medicineId: medicineId ? Number(medicineId) : undefined, supplierId: supplierId ? Number(supplierId) : undefined, dateFrom: dateFrom || undefined, dateTo: dateTo || undefined, lotNumber: lotNumber || undefined, expirationDateFrom: expirationDateFrom || undefined, expirationDateTo: expirationDateTo || undefined }), [page, limit, medicineId, supplierId, dateFrom, dateTo, lotNumber, expirationDateFrom, expirationDateTo])
 	const { data, isLoading, isError } = useQuery<{ data: MedicineImport[]; total: number }>({ queryKey: ['imports', params], queryFn: () => listImports(params) })
 
 	function changePage(p: number) { setSp((prev) => { prev.set('page', String(p)); return prev }, { replace: true }) }
@@ -40,9 +45,14 @@ export default function ImportsPage() {
 			</div>
 
 			<div className="card">
-				<div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+				<div className="grid grid-cols-1 md:grid-cols-6 gap-2">
 					<input className="rounded-md border px-3 py-2" type="number" placeholder="Medicine ID" defaultValue={medicineId ?? ''} onBlur={(e)=> setSp((p)=>{ const v=e.target.value.trim(); if(v) p.set('medicineId', v); else p.delete('medicineId'); p.set('page','1'); return p }, { replace:true })} />
 					<input className="rounded-md border px-3 py-2" type="number" placeholder="Supplier ID" defaultValue={supplierId ?? ''} onBlur={(e)=> setSp((p)=>{ const v=e.target.value.trim(); if(v) p.set('supplierId', v); else p.delete('supplierId'); p.set('page','1'); return p }, { replace:true })} />
+					<input className="rounded-md border px-3 py-2" type="date" placeholder="Từ ngày" defaultValue={dateFrom ?? ''} onBlur={(e)=> setSp((p)=>{ const v=e.target.value.trim(); if(v) p.set('dateFrom', v); else p.delete('dateFrom'); p.set('page','1'); return p }, { replace:true })} />
+					<input className="rounded-md border px-3 py-2" type="date" placeholder="Đến ngày" defaultValue={dateTo ?? ''} onBlur={(e)=> setSp((p)=>{ const v=e.target.value.trim(); if(v) p.set('dateTo', v); else p.delete('dateTo'); p.set('page','1'); return p }, { replace:true })} />
+					<input className="rounded-md border px-3 py-2" placeholder="Lot Number" defaultValue={lotNumber ?? ''} onBlur={(e)=> setSp((p)=>{ const v=e.target.value.trim(); if(v) p.set('lotNumber', v); else p.delete('lotNumber'); p.set('page','1'); return p }, { replace:true })} />
+					<input className="rounded-md border px-3 py-2" type="date" placeholder="HSD từ" defaultValue={expirationDateFrom ?? ''} onBlur={(e)=> setSp((p)=>{ const v=e.target.value.trim(); if(v) p.set('expirationDateFrom', v); else p.delete('expirationDateFrom'); p.set('page','1'); return p }, { replace:true })} />
+					<input className="rounded-md border px-3 py-2" type="date" placeholder="HSD đến" defaultValue={expirationDateTo ?? ''} onBlur={(e)=> setSp((p)=>{ const v=e.target.value.trim(); if(v) p.set('expirationDateTo', v); else p.delete('expirationDateTo'); p.set('page','1'); return p }, { replace:true })} />
 					<div className="flex items-center gap-2">
 						<span className="text-sm">Hiển thị</span>
 						<select className="rounded-md border px-2 py-1" value={limit} onChange={(e)=> changeLimit(Number(e.target.value))}>{[10,20,50].map(n=> <option key={n} value={n}>{n}</option>)}</select>

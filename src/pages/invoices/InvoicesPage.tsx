@@ -102,7 +102,7 @@ export default function InvoicesPage() {
                   <th className="px-3 py-2">Tổng tiền</th>
                   <th className="px-3 py-2">Phương thức</th>
                   <th className="px-3 py-2">Ghi chú</th>
-                  <th className="px-3 py-2">Actions</th>
+                  <th className="px-3 py-2">Thao thác</th>
                 </tr>
               </thead>
               <tbody>

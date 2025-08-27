@@ -71,7 +71,7 @@ export default function DashboardReceptionistPage() {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="page-title">Receptionist Dashboard</h1>
+        <h1 className="page-title">Bảng điều khiển Lễ tân</h1>
         <div className="flex items-center gap-2">
           <input className="rounded-md border px-3 py-2" type="date" value={date} onChange={(e)=> setSp((p)=>{ p.set('date', e.target.value); p.set('page','1'); return p }, { replace:true })} />
           <button className="btn" onClick={()=> setCreateOpen(true)}>Tạo lịch hẹn</button>
@@ -80,10 +80,10 @@ export default function DashboardReceptionistPage() {
 
       {/* KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-        <Kpi title="Appointments" value={String((appts.data?.total ?? 0))} sub={formatStatusLine(summary.data)} loading={appts.isLoading || summary.isLoading} />
-        <Kpi title="Invoices (pending)" value={String(invoicesPending.data?.total ?? 0)} loading={invoicesPending.isLoading} />
-        <Kpi title="Invoices (paid)" value={String(invoicesPaid.data?.total ?? 0)} loading={invoicesPaid.isLoading} />
-        <Kpi title="Low stock (<=10)" value={String(lowStock.data?.data.length ?? 0)} loading={lowStock.isLoading} />
+        <Kpi title="Lịch hẹn" value={String((appts.data?.total ?? 0))} sub={formatStatusLine(summary.data)} loading={appts.isLoading || summary.isLoading} />
+        <Kpi title="Hóa đơn (chờ)" value={String(invoicesPending.data?.total ?? 0)} loading={invoicesPending.isLoading} />
+        <Kpi title="Hóa đơn (đã trả)" value={String(invoicesPaid.data?.total ?? 0)} loading={invoicesPaid.isLoading} />
+        <Kpi title="Tồn thấp (<=10)" value={String(lowStock.data?.data.length ?? 0)} loading={lowStock.isLoading} />
       </div>
 
       {/* Row 2: Queue & Actions */}
@@ -110,7 +110,7 @@ export default function DashboardReceptionistPage() {
                 <th className="px-3 py-2">Bác sĩ</th>
                 <th className="px-3 py-2">Trạng thái</th>
                 <th className="px-3 py-2">Ghi chú</th>
-                <th className="px-3 py-2">Actions</th>
+                <th className="px-3 py-2">Thao tác</th>
               </tr>
             </thead>
             <tbody>
@@ -127,7 +127,7 @@ export default function DashboardReceptionistPage() {
                   </td>
                   <td className="px-3 py-2">{a.notes ?? '-'}</td>
                   <td className="px-3 py-2 flex gap-2">
-                    <button className="btn-ghost" onClick={()=> setAssignModal({ id: a.id })}>Assign</button>
+                    <button className="btn-ghost" onClick={()=> setAssignModal({ id: a.id })}>Gán bác sĩ</button>
                     <button className="btn-ghost" onClick={()=> setResModal({ id: a.id })}>Dời lịch</button>
                     <button className="btn-ghost" onClick={()=> setConfirm({ id: a.id, action: 'delete' })}>Xoá</button>
                   </td>
@@ -147,7 +147,7 @@ export default function DashboardReceptionistPage() {
       {/* Sidebar charts */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
         <div className="card">
-          <h2 className="text-sm font-medium mb-2">Distribution Appointments Today</h2>
+          <h2 className="text-sm font-medium mb-2">Phân bố lịch hẹn hôm nay</h2>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -161,7 +161,7 @@ export default function DashboardReceptionistPage() {
           </div>
         </div>
         <div className="card lg:col-span-2">
-          <h2 className="text-sm font-medium mb-2">Status Counts</h2>
+          <h2 className="text-sm font-medium mb-2">Số lượng theo trạng thái</h2>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={toBar(summary.data)} margin={{ top: 10, right: 20, bottom: 0, left: 0 }}>

@@ -64,19 +64,19 @@ export default function AppointmentTable({ rows, onChangeStatus, onOpenReschedul
                         defaultValue={r.status}
                         onChange={(e) => onChangeStatus(r.id, e.target.value)}
                       >
-                        <option value="waiting">waiting</option>
-                        <option value="confirmed">confirmed</option>
-                        <option value="checked_in">checked_in</option>
-                        <option value="in_progress">in_progress</option>
-                        <option value="completed">completed</option>
-                        <option value="cancelled">cancelled</option>
+                        <option value="waiting">Chờ</option>
+                        <option value="confirmed">Đã xác nhận</option>
+                        <option value="checked_in">Đã đến</option>
+                        <option value="in_progress">Đang khám</option>
+                        <option value="completed">Hoàn tất</option>
+                        <option value="cancelled">Đã hủy</option>
                       </select>
                     )}
                     {onOpenReschedule && (
                       <button className="btn-ghost" onClick={() => onOpenReschedule(r.id)}>Dời lịch</button>
                     )}
                     {onOpenAssignDoctor && (
-                      <button className="btn-ghost" onClick={() => onOpenAssignDoctor(r.id)}>Assign Doctor</button>
+                      <button className="btn-ghost" onClick={() => onOpenAssignDoctor(r.id)}>Gán bác sĩ</button>
                     )}
                     {onCreateMedicalRecord && (
                       <button className="btn-ghost" onClick={() => onCreateMedicalRecord(r.id)}>Tạo bệnh án</button>

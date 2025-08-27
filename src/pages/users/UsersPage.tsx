@@ -76,11 +76,11 @@ export default function UsersPage() {
 							<thead>
 								<tr className="text-left text-slate-600">
 									<th className="px-3 py-2">Email</th>
-									<th className="px-3 py-2">Phone</th>
-									<th className="px-3 py-2">Role</th>
+									<th className="px-3 py-2">SĐT</th>
+									<th className="px-3 py-2">Vai trò</th>
 									<th className="px-3 py-2">Active</th>
-									<th className="px-3 py-2">Last login</th>
-									<th className="px-3 py-2">Actions</th>
+									<th className="px-3 py-2">Lần đăng nhập cuối</th>
+									<th className="px-3 py-2">Thao tác</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -94,10 +94,10 @@ export default function UsersPage() {
 										</td>
 										<td className="px-3 py-2">{u.lastLogin ? new Date(u.lastLogin).toLocaleString('vi-VN') : '-'}</td>
 										<td className="px-3 py-2 flex flex-wrap gap-2">
-											{canUpdate && <button className="btn-ghost" onClick={()=> setEdit(u)}>Edit</button>}
-											{canUpdate && <button className="btn-ghost" onClick={()=> actMut.mutate({ id: u.id, active: !u.isActive })}>{u.isActive ? 'Deactivate' : 'Activate'}</button>}
-											{canUpdate && <button className="btn-ghost" onClick={()=> setResetPwd(u)}>Reset Password</button>}
-											{canDelete && <button className="btn-ghost" onClick={()=> window.confirm('Xoá user này?') && delMut.mutate(u.id)}>Delete</button>}
+											{canUpdate && <button className="btn-ghost" onClick={()=> setEdit(u)}>Cập nhật</button>}
+											{canUpdate && <button className="btn-ghost" onClick={()=> actMut.mutate({ id: u.id, active: !u.isActive })}>{u.isActive ? 'Kích hoạt' : 'Hủy kích hoạt'}</button>}
+											{canUpdate && <button className="btn-ghost" onClick={()=> setResetPwd(u)}>Đổi mật khẩu</button>}
+											{canDelete && <button className="btn-ghost" onClick={()=> window.confirm('Xoá user này?') && delMut.mutate(u.id)}>Xóa</button>}
 										</td>
 									</tr>
 								))}

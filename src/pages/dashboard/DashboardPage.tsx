@@ -13,11 +13,11 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="page-title">Dashboard</h1>
+      <h1 className="page-title">Bảng điều khiển</h1>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <div className="card">Waiting: {data?.waiting ?? 0}</div>
-        <div className="card">Confirmed: {data?.confirmed ?? 0}</div>
-        <div className="card">Completed: {data?.completed ?? 0}</div>
+        <div className="card">Chờ: {data?.waiting ?? 0}</div>
+        <div className="card">Đã xác nhận: {data?.confirmed ?? 0}</div>
+        <div className="card">Hoàn tất: {data?.completed ?? 0}</div>
       </div>
     </div>
   )

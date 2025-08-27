@@ -94,7 +94,7 @@ export default function DashboardAdminPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="page-title">Admin Dashboard</h1>
+        <h1 className="page-title">Bảng điều khiển Quản trị</h1>
         <div className="flex items-center gap-2">
           <input aria-label="From date" className="rounded-md border px-3 py-2" type="date" value={from} onChange={(e)=> setSp((p)=>{ p.set('from', e.target.value); return p }, { replace:true })} />
           <input aria-label="To date" className="rounded-md border px-3 py-2" type="date" value={to} onChange={(e)=> setSp((p)=>{ p.set('to', e.target.value); return p }, { replace:true })} />
@@ -117,7 +117,7 @@ export default function DashboardAdminPage() {
       {/* Row 2: Revenue trend & Invoices breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
         <div className="card lg:col-span-2">
-          <SectionTitle>Revenue theo ngày</SectionTitle>
+          <SectionTitle>Doanh thu theo ngày</SectionTitle>
           <BlockState isLoading={revenueQuery.isLoading} isError={revenueQuery.isError} onRetry={revenueQuery.refetch}>
             <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
@@ -136,7 +136,7 @@ export default function DashboardAdminPage() {
           </BlockState>
         </div>
         <div className="card">
-          <SectionTitle>Invoices hôm nay</SectionTitle>
+          <SectionTitle>Hóa đơn hôm nay</SectionTitle>
           <BlockState isLoading={invoicesTodayPaid.loading || invoicesTodayPending.loading} isError={false}>
             <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
@@ -176,7 +176,7 @@ export default function DashboardAdminPage() {
           </BlockState>
         </div>
         <div className="card lg:col-span-2">
-          <SectionTitle>Top-10 Medicine usage</SectionTitle>
+          <SectionTitle>Top-10 sử dụng thuốc</SectionTitle>
           <BlockState isLoading={usageQuery.isLoading} isError={usageQuery.isError} onRetry={usageQuery.refetch}>
             <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
@@ -197,9 +197,9 @@ export default function DashboardAdminPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         <div className="card">
           <div className="flex items-center justify-between mb-2">
-            <SectionTitle>Low Stock Medicines</SectionTitle>
+            <SectionTitle>Thuốc tồn thấp</SectionTitle>
             <div className="flex items-center gap-2">
-              <span className="text-sm">Threshold</span>
+              <span className="text-sm">Ngưỡng</span>
               <input className="rounded-md border px-2 py-1 w-20" type="number" value={stockThreshold} onChange={(e)=> setSp((p)=>{ p.set('stockMax', e.target.value || '10'); return p }, { replace:true })} />
             </div>
           </div>
@@ -231,17 +231,17 @@ export default function DashboardAdminPage() {
           </BlockState>
         </div>
         <div className="card">
-          <SectionTitle>Recent Activities</SectionTitle>
+          <SectionTitle>Hoạt động gần đây</SectionTitle>
           <BlockState isLoading={auditQuery.isLoading} isError={auditQuery.isError} onRetry={auditQuery.refetch}>
             <div className="overflow-x-auto">
               <table className="min-w-full text-sm">
                 <thead>
                   <tr className="text-left text-slate-600">
-                    <th className="px-3 py-2">Time</th>
-                    <th className="px-3 py-2">Table</th>
-                    <th className="px-3 py-2">Record</th>
-                    <th className="px-3 py-2">Action</th>
-                    <th className="px-3 py-2">UserId</th>
+                    <th className="px-3 py-2">Thời gian</th>
+                    <th className="px-3 py-2">Bảng</th>
+                    <th className="px-3 py-2">Bản ghi</th>
+                    <th className="px-3 py-2">Hành động</th>
+                    <th className="px-3 py-2">Người dùng</th>
                   </tr>
                 </thead>
                 <tbody>
