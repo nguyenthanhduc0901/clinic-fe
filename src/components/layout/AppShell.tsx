@@ -11,11 +11,18 @@ export default function AppShell() {
   const perms = permissions.length ? permissions : user?.role?.permissions?.map((p) => p.name) ?? []
   const { pathname } = useLocation()
   const [open, setOpen] = useState(false)
+  const roleName = (user?.role?.name as string | undefined) || 'User'
+  const roleLabel = `${roleName.charAt(0).toUpperCase()}${roleName.slice(1)}'s screen`
 
   return (
     <div className="min-h-screen grid grid-rows-[auto,1fr] md:grid-rows-1 md:grid-cols-[260px,1fr]">
       <aside className="hidden md:block border-r bg-white dark:bg-slate-900">
-        <div className="p-4 text-lg font-semibold">Clinic Admin</div>
+        <div className="p-4">
+          <a href="/" className="flex items-center gap-3 select-none" aria-label="Trang chủ">
+            <img src="/icon.png" alt="Biểu tượng phòng khám" className="h-20 w-20" />
+            <span className="text-lg font-semibold tracking-tight text-slate-800 dark:text-slate-200">{roleLabel}</span>
+          </a>
+        </div>
         <nav className="px-2 space-y-1">
           {NAV_ITEMS.filter((i) => can(perms, i.requiredPermissions)).map((item) => (
             <NavLink
@@ -39,7 +46,12 @@ export default function AppShell() {
         <div className="fixed inset-0 z-40 md:hidden">
           <div className="absolute inset-0 bg-black/40" onClick={() => setOpen(false)} />
           <aside className="relative z-50 h-full w-72 bg-white dark:bg-slate-900 border-r">
-            <div className="p-4 text-lg font-semibold">Clinic Admin</div>
+            <div className="p-4">
+              <a href="/" className="flex items-center gap-3 select-none" aria-label="Trang chủ">
+                <img src="/icon.png" alt="Biểu tượng phòng khám" className="h-16 w-16" />
+                <span className="text-base font-semibold tracking-tight text-slate-800 dark:text-slate-200">{roleLabel}</span>
+              </a>
+            </div>
             <nav className="px-2 space-y-1">
               {NAV_ITEMS.filter((i) => can(perms, i.requiredPermissions)).map((item) => (
                 <NavLink

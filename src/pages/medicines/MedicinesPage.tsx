@@ -5,8 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 import { listMedicines, type Medicine, getMedicineById, deleteMedicine } from '@/lib/api/medicines'
 import { getCatalogs } from '@/lib/api/catalogs'
 import Pagination from '@/components/ui/Pagination'
-import MedicineCreateModal from '@/pages/medicines/MedicineCreateModal'
-import MedicineEditModal from '@/pages/medicines/MedicineEditModal'
+// Inline create/edit modals were removed; hide these actions if components are absent
 import ImportStockModal from '@/pages/medicines/ImportStockModal'
 import AdjustStockModal from '@/pages/medicines/AdjustStockModal'
 import { useAuthStore } from '@/lib/auth/authStore'
@@ -61,8 +60,7 @@ export default function MedicinesPage() {
 
   const { permissions, user } = useAuthStore()
   const perms = permissions.length ? permissions : user?.role?.permissions?.map((p: any) => p.name) ?? []
-  const canCreate = can(perms, ['medicine:create'])
-  const canEdit = can(perms, ['medicine:update'])
+  // Create/Edit are not available in this build
   const canDelete = can(perms, ['permission:manage'])
   const canImport = can(perms, ['medicine:import'])
   const canAdjust = can(perms, ['permission:manage'])
@@ -76,8 +74,8 @@ export default function MedicinesPage() {
     },
   })
 
-  const [createOpen, setCreateOpen] = useState(false)
-  const [edit, setEdit] = useState<{ id: number | null }>({ id: null })
+  // const [createOpen, setCreateOpen] = useState(false)
+  // const [edit, setEdit] = useState<{ id: number | null }>({ id: null })
   const [importState, setImportState] = useState<{ id: number | null }>({ id: null })
   const [adjustState, setAdjustState] = useState<{ id: number | null }>({ id: null })
 
@@ -85,7 +83,7 @@ export default function MedicinesPage() {
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h1 className="page-title">Thuốc</h1>
-        {canCreate && <button className="btn-primary" onClick={() => setCreateOpen(true)}>Thêm thuốc</button>}
+        {/* Create button hidden (feature not available) */}
       </div>
 
       <div className="card">
@@ -123,7 +121,7 @@ export default function MedicinesPage() {
                   <th className="px-3 py-2">Giá</th>
                   <th className="px-3 py-2">Tồn kho</th>
                   <th className="px-3 py-2">Ghi chú</th>
-                  {(canEdit || canDelete || canImport || canAdjust) && <th className="px-3 py-2">Actions</th>}
+                  {(canDelete || canImport || canAdjust) && <th className="px-3 py-2">Actions</th>}
                 </tr>
               </thead>
               <tbody>
@@ -134,9 +132,8 @@ export default function MedicinesPage() {
                     <td className="px-3 py-2">{formatVnd(m.price)}</td>
                     <td className="px-3 py-2">{m.quantityInStock}</td>
                     <td className="px-3 py-2 max-w-[280px] truncate" title={m.description ?? ''}>{m.description ?? '-'}</td>
-                    {(canEdit || canDelete || canImport || canAdjust) && (
+                    {(canDelete || canImport || canAdjust) && (
                       <td className="px-3 py-2 flex flex-wrap gap-2">
-                        {canEdit && <button className="btn-ghost" onClick={()=> setEdit({ id: m.id })}>Edit</button>}
                         {canDelete && <button className="btn-ghost" onClick={()=> window.confirm('Xoá thuốc này?') && delMut.mutate(m.id)}>Delete</button>}
                         {canImport && <button className="btn-ghost" onClick={()=> setImportState({ id: m.id })}>Import</button>}
                         {canAdjust && <button className="btn-ghost" onClick={()=> setAdjustState({ id: m.id })}>Adjust</button>}
@@ -156,8 +153,7 @@ export default function MedicinesPage() {
       {/* Detail drawer */}
       {!!sp.get('detailId') && <MedicineDetail id={Number(sp.get('detailId'))} onClose={()=> setSp((p)=>{ p.delete('detailId'); return p }, { replace:true })} />}
 
-      {canCreate && <MedicineCreateModal open={createOpen} onClose={()=> setCreateOpen(false)} />}
-      {canEdit && edit.id != null && <MedicineEditModal open={!!edit.id} onClose={()=> setEdit({ id: null })} id={edit.id!} />}
+      {/* Create/Edit modals not available in this build */}
       {canImport && importState.id != null && <ImportStockModal open={!!importState.id} onClose={()=> setImportState({ id: null })} id={importState.id!} />}
       {canAdjust && adjustState.id != null && <AdjustStockModal open={!!adjustState.id} onClose={()=> setAdjustState({ id: null })} id={adjustState.id!} />}
     </div>

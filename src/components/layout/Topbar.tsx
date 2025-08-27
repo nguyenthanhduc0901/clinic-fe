@@ -14,12 +14,15 @@ export default function Topbar({ onToggleSidebar }: Props) {
   }
   return (
     <header className="sticky top-0 z-10 border-b bg-white/80 backdrop-blur dark:bg-slate-900/80">
-      <div className="flex h-14 items-center justify-between px-4">
+      <div className="flex h-24 items-center justify-between px-4">
         <div className="flex items-center gap-3">
           <button className="md:hidden btn-ghost p-1" onClick={onToggleSidebar} aria-label="Toggle sidebar">
             <Bars3Icon className="h-6 w-6" />
           </button>
-          <div className="hidden md:flex items-center gap-2">
+          <a href="/" className="hidden md:flex items-center gap-2 select-none" aria-label="Trang chủ">
+            <img src="/logo.png" alt="Logo phòng khám" className="h-24 w-auto" />
+          </a>
+          <div className="hidden md:flex items-center gap-2 ml-4">
             <MagnifyingGlassIcon className="h-5 w-5 text-slate-500" />
             <input className="bg-transparent outline-none text-sm" placeholder="Search..." />
           </div>

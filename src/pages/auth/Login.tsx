@@ -61,8 +61,11 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen grid place-items-center p-4">
-      <div className="w-full max-w-md card">
+    <div
+      className="min-h-screen grid place-items-center p-4 bg-center bg-no-repeat bg-cover"
+      style={{ backgroundImage: "url('/banner.webp')" }}
+    >
+      <div className="w-full max-w-md card bg-white/90 backdrop-blur-sm">
         <h1 className="page-title">Đăng nhập</h1>
         <form className="space-y-3" onSubmit={handleSubmit(onSubmit)}>
           <div>
