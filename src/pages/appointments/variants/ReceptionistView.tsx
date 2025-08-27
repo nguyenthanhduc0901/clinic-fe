@@ -105,8 +105,13 @@ export default function ReceptionistView() {
         <AppointmentFilters value={filters} onChange={setFilters} />
       </div>
       <div className="card">
-        {isLoading && <div>Đang tải...</div>}
-        {isError && <div className="text-danger">Tải dữ liệu thất bại</div>}
+        {isLoading && <div className="space-y-2"><div className="h-6 w-40 bg-neutral-200 dark:bg-neutral-700 animate-pulse rounded" /><div className="space-y-1">{Array.from({length:6}).map((_,i)=> <div key={i} className="h-4 bg-neutral-200 dark:bg-neutral-700 animate-pulse rounded" />)}</div></div>}
+        {isError && (
+          <div className="text-danger flex items-center justify-between">
+            <span>Tải dữ liệu thất bại</span>
+            <button className="btn-ghost" onClick={()=> window.location.reload()}>Thử lại</button>
+          </div>
+        )}
         {!isLoading && !isError && (
           <AppointmentTable
             rows={data?.items ?? []}

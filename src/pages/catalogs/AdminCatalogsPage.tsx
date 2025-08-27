@@ -8,6 +8,10 @@ import Pagination from '@/components/ui/Pagination'
 import { toast } from '@/components/ui/Toast'
 import { useAuthStore } from '@/lib/auth/authStore'
 import { can } from '@/lib/auth/ability'
+import { FormField, Input, Textarea } from '@/components/ui/Input'
+import Button from '@/components/ui/Button'
+import { SkeletonTable } from '@/components/ui/Skeleton'
+import ConfirmModal from '@/components/ui/ConfirmModal'
 
 export default function AdminCatalogsPage() {
 	const { permissions, user } = useAuthStore()
@@ -24,9 +28,9 @@ export default function AdminCatalogsPage() {
 			<h1 className="page-title">Quản trị Catalogs</h1>
 			<div className="card">
 				<div className="flex gap-2">
-					<button className={`btn-ghost ${tab==='units'?'font-medium':''}`} onClick={()=> setSp((p)=> { p.set('tab','units'); p.set('page','1'); return p }, { replace:true })}>Đơn vị</button>
-					<button className={`btn-ghost ${tab==='usage'?'font-medium':''}`} onClick={()=> setSp((p)=> { p.set('tab','usage'); p.set('page','1'); return p }, { replace:true })}>Hướng dẫn sử dụng</button>
-					<button className={`btn-ghost ${tab==='disease'?'font-medium':''}`} onClick={()=> setSp((p)=> { p.set('tab','disease'); p.set('page','1'); return p }, { replace:true })}>Nhóm bệnh</button>
+					<Button variant="ghost" className={tab==='units'?'font-medium':''} onClick={()=> setSp((p)=> { p.set('tab','units'); p.set('page','1'); return p }, { replace:true })}>Đơn vị</Button>
+					<Button variant="ghost" className={tab==='usage'?'font-medium':''} onClick={()=> setSp((p)=> { p.set('tab','usage'); p.set('page','1'); return p }, { replace:true })}>Hướng dẫn sử dụng</Button>
+					<Button variant="ghost" className={tab==='disease'?'font-medium':''} onClick={()=> setSp((p)=> { p.set('tab','disease'); p.set('page','1'); return p }, { replace:true })}>Nhóm bệnh</Button>
 				</div>
 			</div>
 			{tab === 'units' && <UnitsTab page={page} limit={limit} onChangePage={(p)=> setSp((q)=> { q.set('page', String(p)); return q }, { replace:true })} />}
@@ -41,28 +45,31 @@ function UnitsTab({ page, limit, onChangePage }: { page: number; limit: number; 
 	const { data, isLoading, isError } = useQuery({ queryKey: ['catalogs-admin','units',{ page, limit }], queryFn: () => listUnits({ page, limit }) })
 	const [createOpen, setCreateOpen] = useState(false)
 	const [edit, setEdit] = useState<any | null>(null)
-    const [q, setQ] = useState('')
-    const dq = useDebouncedValue(q, 300)
+	const [q, setQ] = useState('')
+	const dq = useDebouncedValue(q, 300)
+	const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
 	const createMut = useMutation({ mutationFn: (v:any)=> createUnit(v), onSuccess: ()=> { toast.success('Tạo thành công'); qc.invalidateQueries({ queryKey: ['catalogs-admin','units'] }); setCreateOpen(false) }, onError: (e:any)=> toast.error(e?.response?.data?.message || 'Lỗi tạo') })
 	const updateMut = useMutation({ mutationFn: ({ id, payload }: any)=> updateUnit(id, payload), onSuccess: ()=> { toast.success('Cập nhật thành công'); qc.invalidateQueries({ queryKey: ['catalogs-admin','units'] }); setEdit(null) }, onError: (e:any)=> toast.error(e?.response?.data?.message || 'Lỗi cập nhật') })
 	const deleteMut = useMutation({ mutationFn: (id:number)=> deleteUnit(id), onSuccess: ()=> { toast.success('Xoá thành công'); qc.invalidateQueries({ queryKey: ['catalogs-admin','units'] }) }, onError: (e:any)=> toast.error(e?.response?.data?.message || 'Lỗi xoá') })
 	const total = data?.total ?? 0
 	const pageCount = Math.max(1, Math.ceil(total / (limit || 10)))
-    const rows = (data?.data ?? []).filter((u)=> u.name.toLowerCase().includes(dq.toLowerCase()) || (u.description ?? '').toLowerCase().includes(dq.toLowerCase()))
+	const rows = (data?.data ?? []).filter((u)=> u.name.toLowerCase().includes(dq.toLowerCase()) || (u.description ?? '').toLowerCase().includes(dq.toLowerCase()))
 	return (
 		<div className="card">
 			<div className="flex items-center justify-between">
 				<h2 className="font-medium">Đơn vị</h2>
-				<button className="btn-primary" onClick={()=> setCreateOpen(true)}>Thêm mới</button>
+				<Button onClick={()=> setCreateOpen(true)}>Thêm mới</Button>
 			</div>
 			<div className="mb-2">
-				<input className="rounded-md border px-3 py-2" placeholder="Tìm theo tên/mô tả" value={q} onChange={(e)=> setQ(e.target.value)} />
+				<FormField id="units-q" label="Tìm kiếm">
+					<Input id="units-q" placeholder="Tìm theo tên/mô tả" value={q} onChange={(e)=> setQ(e.target.value)} />
+				</FormField>
 			</div>
-			{isLoading && <div>Đang tải...</div>}
+			{isLoading && <SkeletonTable rows={6} />}
 			{isError && <div className="text-danger">Tải dữ liệu thất bại</div>}
 			{!isLoading && !isError && (
 				<div className="overflow-x-auto">
-					<table className="min-w-full text-sm">
+					<table className="min-w-full text-sm table-fixed-header table-zebra table-hover">
 						<thead>
 							<tr className="text-left text-slate-600">
 								<th className="px-3 py-2">Mã</th>
@@ -80,8 +87,8 @@ function UnitsTab({ page, limit, onChangePage }: { page: number; limit: number; 
 									<td className="px-3 py-2 max-w-[320px] truncate" title={u.description ?? ''}>{u.description ?? '-'}</td>
 									<td className="px-3 py-2">{u.updatedAt ? new Date(u.updatedAt).toLocaleString('vi-VN') : '-'}</td>
 									<td className="px-3 py-2 flex gap-2">
-										<button className="btn-ghost" onClick={()=> setEdit(u)}>Sửa</button>
-										<button className="btn-ghost text-danger" onClick={()=> { if (confirm('Xoá?')) deleteMut.mutate(u.id) }}>Xoá</button>
+										<Button variant="ghost" size="sm" onClick={()=> setEdit(u)}>Sửa</Button>
+										<Button variant="danger" size="sm" onClick={()=> setConfirmDeleteId(u.id)}>Xoá</Button>
 									</td>
 								</tr>
 							))}
@@ -103,6 +110,11 @@ function UnitsTab({ page, limit, onChangePage }: { page: number; limit: number; 
 					<UnitForm initial={{ name: edit.name, description: edit.description ?? '' }} onSubmit={(v)=> updateMut.mutate({ id: edit.id, payload: v })} onClose={()=> setEdit(null)} pending={updateMut.isPending} />
 				</Modal>
 			)}
+			{confirmDeleteId != null && (
+				<ConfirmModal open title={`Xoá đơn vị #${confirmDeleteId}?`} onClose={()=> setConfirmDeleteId(null)} onConfirm={()=> { deleteMut.mutate(confirmDeleteId!); setConfirmDeleteId(null) }} confirmText="Xoá">
+					<div className="text-sm">Thao tác này không thể hoàn tác.</div>
+				</ConfirmModal>
+			)}
 		</div>
 	)
 }
@@ -112,17 +124,15 @@ function UnitForm({ initial, onSubmit, onClose, pending }: { initial?: any; onSu
 	const [desc, setDesc] = useState(initial?.description ?? '')
 	return (
 		<form className="space-y-3" onSubmit={(e)=> { e.preventDefault(); onSubmit({ name, description: desc || undefined }) }}>
-			<div>
-				<label className="block text-sm mb-1" htmlFor="u-name">Tên</label>
-				<input id="u-name" className="w-full rounded-md border px-3 py-2" value={name} onChange={(e)=> setName(e.target.value)} required aria-invalid={!name ? true : undefined} />
-			</div>
-			<div>
-				<label className="block text-sm mb-1" htmlFor="u-desc">Mô tả</label>
-				<textarea id="u-desc" className="w-full rounded-md border px-3 py-2" rows={3} value={desc} onChange={(e)=> setDesc(e.target.value)} />
-			</div>
-			<div className="text-right">
-				<button type="button" className="btn-ghost" onClick={onClose}>Hủy</button>
-				<button className="btn-primary" disabled={pending}>{pending?'Đang lưu...':'Lưu'}</button>
+			<FormField id="u-name" label="Tên">
+				<Input id="u-name" value={name} onChange={(e)=> setName(e.target.value)} required aria-invalid={!name ? true : undefined} />
+			</FormField>
+			<FormField id="u-desc" label="Mô tả">
+				<Textarea id="u-desc" rows={3} value={desc} onChange={(e)=> setDesc(e.target.value)} />
+			</FormField>
+			<div className="text-right space-x-2">
+				<Button type="button" variant="ghost" onClick={onClose}>Hủy</Button>
+				<Button disabled={pending}>{pending?'Đang lưu...':'Lưu'}</Button>
 			</div>
 		</form>
 	)
@@ -134,28 +144,31 @@ function UsageTab({ page, limit, onChangePage }: { page: number; limit: number; 
 	const { data, isLoading, isError } = useQuery({ queryKey: ['catalogs-admin','usage',{ page, limit }], queryFn: () => listUsageInstructions({ page, limit }) })
 	const [createOpen, setCreateOpen] = useState(false)
 	const [edit, setEdit] = useState<any | null>(null)
-    const [q, setQ] = useState('')
-    const dq = useDebouncedValue(q, 300)
+	const [q, setQ] = useState('')
+	const dq = useDebouncedValue(q, 300)
+	const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
 	const createMut = useMutation({ mutationFn: (v:any)=> createUsageInstruction(v), onSuccess: ()=> { toast.success('Tạo thành công'); qc.invalidateQueries({ queryKey: ['catalogs-admin','usage'] }); setCreateOpen(false) }, onError: (e:any)=> toast.error(e?.response?.data?.message || 'Lỗi tạo') })
 	const updateMut = useMutation({ mutationFn: ({ id, payload }: any)=> updateUsageInstruction(id, payload), onSuccess: ()=> { toast.success('Cập nhật thành công'); qc.invalidateQueries({ queryKey: ['catalogs-admin','usage'] }); setEdit(null) }, onError: (e:any)=> toast.error(e?.response?.data?.message || 'Lỗi cập nhật') })
 	const deleteMut = useMutation({ mutationFn: (id:number)=> deleteUsageInstruction(id), onSuccess: ()=> { toast.success('Xoá thành công'); qc.invalidateQueries({ queryKey: ['catalogs-admin','usage'] }) }, onError: (e:any)=> toast.error(e?.response?.data?.message || 'Lỗi xoá') })
 	const total = data?.total ?? 0
 	const pageCount = Math.max(1, Math.ceil(total / (limit || 10)))
-    const rows = (data?.data ?? []).filter((u)=> u.instruction.toLowerCase().includes(dq.toLowerCase()) || (u.description ?? '').toLowerCase().includes(dq.toLowerCase()))
+	const rows = (data?.data ?? []).filter((u)=> u.instruction.toLowerCase().includes(dq.toLowerCase()) || (u.description ?? '').toLowerCase().includes(dq.toLowerCase()))
 	return (
 		<div className="card">
 			<div className="flex items-center justify-between">
 				<h2 className="font-medium">Hướng dẫn sử dụng</h2>
-				<button className="btn-primary" onClick={()=> setCreateOpen(true)}>Thêm mới</button>
+				<Button onClick={()=> setCreateOpen(true)}>Thêm mới</Button>
 			</div>
 			<div className="mb-2">
-				<input className="rounded-md border px-3 py-2" placeholder="Tìm theo hướng dẫn/mô tả" value={q} onChange={(e)=> setQ(e.target.value)} />
+				<FormField id="usage-q" label="Tìm kiếm">
+					<Input id="usage-q" placeholder="Tìm theo hướng dẫn/mô tả" value={q} onChange={(e)=> setQ(e.target.value)} />
+				</FormField>
 			</div>
-			{isLoading && <div>Đang tải...</div>}
+			{isLoading && <SkeletonTable rows={6} />}
 			{isError && <div className="text-danger">Tải dữ liệu thất bại</div>}
 			{!isLoading && !isError && (
 				<div className="overflow-x-auto">
-					<table className="min-w-full text-sm">
+					<table className="min-w-full text-sm table-fixed-header table-zebra table-hover">
 						<thead>
 							<tr className="text-left text-slate-600">
 								<th className="px-3 py-2">Mã</th>
@@ -173,8 +186,8 @@ function UsageTab({ page, limit, onChangePage }: { page: number; limit: number; 
 									<td className="px-3 py-2 max-w-[320px] truncate" title={u.description ?? ''}>{u.description ?? '-'}</td>
 									<td className="px-3 py-2">{u.updatedAt ? new Date(u.updatedAt).toLocaleString('vi-VN') : '-'}</td>
 									<td className="px-3 py-2 flex gap-2">
-										<button className="btn-ghost" onClick={()=> setEdit(u)}>Sửa</button>
-										<button className="btn-ghost text-danger" onClick={()=> { if (confirm('Xoá?')) deleteMut.mutate(u.id) }}>Xoá</button>
+										<Button variant="ghost" size="sm" onClick={()=> setEdit(u)}>Sửa</Button>
+										<Button variant="danger" size="sm" onClick={()=> setConfirmDeleteId(u.id)}>Xoá</Button>
 									</td>
 								</tr>
 							))}
@@ -196,6 +209,11 @@ function UsageTab({ page, limit, onChangePage }: { page: number; limit: number; 
 					<UsageForm initial={{ instruction: edit.instruction, description: edit.description ?? '' }} onSubmit={(v)=> updateMut.mutate({ id: edit.id, payload: v })} onClose={()=> setEdit(null)} pending={updateMut.isPending} />
 				</Modal>
 			)}
+			{confirmDeleteId != null && (
+				<ConfirmModal open title={`Xoá hướng dẫn #${confirmDeleteId}?`} onClose={()=> setConfirmDeleteId(null)} onConfirm={()=> { deleteMut.mutate(confirmDeleteId!); setConfirmDeleteId(null) }} confirmText="Xoá">
+					<div className="text-sm">Thao tác này không thể hoàn tác.</div>
+				</ConfirmModal>
+			)}
 		</div>
 	)
 }
@@ -205,17 +223,15 @@ function UsageForm({ initial, onSubmit, onClose, pending }: { initial?: any; onS
 	const [desc, setDesc] = useState(initial?.description ?? '')
 	return (
 		<form className="space-y-3" onSubmit={(e)=> { e.preventDefault(); onSubmit({ instruction, description: desc || undefined }) }}>
-			<div>
-				<label className="block text-sm mb-1" htmlFor="i-name">Hướng dẫn</label>
-				<input id="i-name" className="w-full rounded-md border px-3 py-2" value={instruction} onChange={(e)=> setInstruction(e.target.value)} required aria-invalid={!instruction ? true : undefined} />
-			</div>
-			<div>
-				<label className="block text-sm mb-1" htmlFor="i-desc">Mô tả</label>
-				<textarea id="i-desc" className="w-full rounded-md border px-3 py-2" rows={3} value={desc} onChange={(e)=> setDesc(e.target.value)} />
-			</div>
-			<div className="text-right">
-				<button type="button" className="btn-ghost" onClick={onClose}>Hủy</button>
-				<button className="btn-primary" disabled={pending}>{pending?'Đang lưu...':'Lưu'}</button>
+			<FormField id="i-name" label="Hướng dẫn">
+				<Input id="i-name" value={instruction} onChange={(e)=> setInstruction(e.target.value)} required aria-invalid={!instruction ? true : undefined} />
+			</FormField>
+			<FormField id="i-desc" label="Mô tả">
+				<Textarea id="i-desc" rows={3} value={desc} onChange={(e)=> setDesc(e.target.value)} />
+			</FormField>
+			<div className="text-right space-x-2">
+				<Button type="button" variant="ghost" onClick={onClose}>Hủy</Button>
+				<Button disabled={pending}>{pending?'Đang lưu...':'Lưu'}</Button>
 			</div>
 		</form>
 	)
@@ -227,28 +243,31 @@ function DiseaseTab({ page, limit, onChangePage }: { page: number; limit: number
 	const { data, isLoading, isError } = useQuery({ queryKey: ['catalogs-admin','disease',{ page, limit }], queryFn: () => listDiseaseTypes({ page, limit }) })
 	const [createOpen, setCreateOpen] = useState(false)
 	const [edit, setEdit] = useState<any | null>(null)
-    const [q, setQ] = useState('')
-    const dq = useDebouncedValue(q, 300)
+	const [q, setQ] = useState('')
+	const dq = useDebouncedValue(q, 300)
+	const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
 	const createMut = useMutation({ mutationFn: (v:any)=> createDiseaseType(v), onSuccess: ()=> { toast.success('Tạo thành công'); qc.invalidateQueries({ queryKey: ['catalogs-admin','disease'] }); setCreateOpen(false) }, onError: (e:any)=> toast.error(e?.response?.data?.message || 'Lỗi tạo') })
 	const updateMut = useMutation({ mutationFn: ({ id, payload }: any)=> updateDiseaseType(id, payload), onSuccess: ()=> { toast.success('Cập nhật thành công'); qc.invalidateQueries({ queryKey: ['catalogs-admin','disease'] }); setEdit(null) }, onError: (e:any)=> toast.error(e?.response?.data?.message || 'Lỗi cập nhật') })
 	const deleteMut = useMutation({ mutationFn: (id:number)=> deleteDiseaseType(id), onSuccess: ()=> { toast.success('Xoá thành công'); qc.invalidateQueries({ queryKey: ['catalogs-admin','disease'] }) }, onError: (e:any)=> toast.error(e?.response?.data?.message || 'Lỗi xoá') })
 	const total = data?.total ?? 0
 	const pageCount = Math.max(1, Math.ceil(total / (limit || 10)))
-    const rows = (data?.data ?? []).filter((u)=> u.name.toLowerCase().includes(dq.toLowerCase()) || (u.description ?? '').toLowerCase().includes(dq.toLowerCase()))
+	const rows = (data?.data ?? []).filter((u)=> u.name.toLowerCase().includes(dq.toLowerCase()) || (u.description ?? '').toLowerCase().includes(dq.toLowerCase()))
 	return (
 		<div className="card">
 			<div className="flex items-center justify-between">
 				<h2 className="font-medium">Nhóm bệnh</h2>
-				<button className="btn-primary" onClick={()=> setCreateOpen(true)}>Thêm mới</button>
+				<Button onClick={()=> setCreateOpen(true)}>Thêm mới</Button>
 			</div>
 			<div className="mb-2">
-				<input className="rounded-md border px-3 py-2" placeholder="Tìm theo tên/mô tả" value={q} onChange={(e)=> setQ(e.target.value)} />
+				<FormField id="disease-q" label="Tìm kiếm">
+					<Input id="disease-q" placeholder="Tìm theo tên/mô tả" value={q} onChange={(e)=> setQ(e.target.value)} />
+				</FormField>
 			</div>
-			{isLoading && <div>Đang tải...</div>}
+			{isLoading && <SkeletonTable rows={6} />}
 			{isError && <div className="text-danger">Tải dữ liệu thất bại</div>}
 			{!isLoading && !isError && (
 				<div className="overflow-x-auto">
-					<table className="min-w-full text-sm">
+					<table className="min-w-full text-sm table-fixed-header table-zebra table-hover">
 						<thead>
 							<tr className="text-left text-slate-600">
 								<th className="px-3 py-2">Mã</th>
@@ -266,8 +285,8 @@ function DiseaseTab({ page, limit, onChangePage }: { page: number; limit: number
 									<td className="px-3 py-2 max-w-[320px] truncate" title={u.description ?? ''}>{u.description ?? '-'}</td>
 									<td className="px-3 py-2">{u.updatedAt ? new Date(u.updatedAt).toLocaleString('vi-VN') : '-'}</td>
 									<td className="px-3 py-2 flex gap-2">
-										<button className="btn-ghost" onClick={()=> setEdit(u)}>Sửa</button>
-										<button className="btn-ghost text-danger" onClick={()=> { if (confirm('Xoá?')) deleteMut.mutate(u.id) }}>Xoá</button>
+										<Button variant="ghost" size="sm" onClick={()=> setEdit(u)}>Sửa</Button>
+										<Button variant="danger" size="sm" onClick={()=> setConfirmDeleteId(u.id)}>Xoá</Button>
 									</td>
 								</tr>
 							))}
@@ -289,6 +308,11 @@ function DiseaseTab({ page, limit, onChangePage }: { page: number; limit: number
 					<DiseaseForm initial={{ name: edit.name, description: edit.description ?? '' }} onSubmit={(v)=> updateMut.mutate({ id: edit.id, payload: v })} onClose={()=> setEdit(null)} pending={updateMut.isPending} />
 				</Modal>
 			)}
+			{confirmDeleteId != null && (
+				<ConfirmModal open title={`Xoá nhóm bệnh #${confirmDeleteId}?`} onClose={()=> setConfirmDeleteId(null)} onConfirm={()=> { deleteMut.mutate(confirmDeleteId!); setConfirmDeleteId(null) }} confirmText="Xoá">
+					<div className="text-sm">Thao tác này không thể hoàn tác.</div>
+				</ConfirmModal>
+			)}
 		</div>
 	)
 }
@@ -298,17 +322,15 @@ function DiseaseForm({ initial, onSubmit, onClose, pending }: { initial?: any; o
 	const [desc, setDesc] = useState(initial?.description ?? '')
 	return (
 		<form className="space-y-3" onSubmit={(e)=> { e.preventDefault(); onSubmit({ name, description: desc || undefined }) }}>
-			<div>
-				<label className="block text-sm mb-1" htmlFor="d-name">Tên</label>
-				<input id="d-name" className="w-full rounded-md border px-3 py-2" value={name} onChange={(e)=> setName(e.target.value)} required aria-invalid={!name ? true : undefined} />
-			</div>
-			<div>
-				<label className="block text-sm mb-1" htmlFor="d-desc">Mô tả</label>
-				<textarea id="d-desc" className="w-full rounded-md border px-3 py-2" rows={3} value={desc} onChange={(e)=> setDesc(e.target.value)} />
-			</div>
-			<div className="text-right">
-				<button type="button" className="btn-ghost" onClick={onClose}>Hủy</button>
-				<button className="btn-primary" disabled={pending}>{pending?'Đang lưu...':'Lưu'}</button>
+			<FormField id="d-name" label="Tên">
+				<Input id="d-name" value={name} onChange={(e)=> setName(e.target.value)} required aria-invalid={!name ? true : undefined} />
+			</FormField>
+			<FormField id="d-desc" label="Mô tả">
+				<Textarea id="d-desc" rows={3} value={desc} onChange={(e)=> setDesc(e.target.value)} />
+			</FormField>
+			<div className="text-right space-x-2">
+				<Button type="button" variant="ghost" onClick={onClose}>Hủy</Button>
+				<Button disabled={pending}>{pending?'Đang lưu...':'Lưu'}</Button>
 			</div>
 		</form>
 	)

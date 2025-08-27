@@ -1,4 +1,5 @@
 import Badge from '@/components/ui/Badge'
+import Button from '@/components/ui/Button'
 
 export type AppointmentRow = {
   id: string
@@ -25,8 +26,8 @@ export default function AppointmentTable({ rows, onChangeStatus, onOpenReschedul
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full text-sm">
-        <thead>
-          <tr className="text-left text-slate-600">
+        <thead className="sticky top-0 bg-white dark:bg-neutral-900 z-[1]">
+          <tr className="text-left text-neutral-600 dark:text-neutral-300">
             <th className="px-3 py-2">STT</th>
             <th className="px-3 py-2">Bệnh nhân</th>
             <th className="px-3 py-2">Bác sĩ</th>
@@ -43,7 +44,7 @@ export default function AppointmentTable({ rows, onChangeStatus, onOpenReschedul
             </tr>
           )}
           {rows.map((r) => (
-            <tr key={r.id} className="border-t">
+            <tr key={r.id} className="border-t odd:bg-neutral-50 dark:odd:bg-neutral-900/40 hover:bg-neutral-100 dark:hover:bg-neutral-800">
               <td className="px-3 py-2">{r.orderNumber}</td>
               <td className="px-3 py-2">{r.patient?.fullName} {r.patient?.phone ? `(${r.patient?.phone})` : ''}</td>
               <td className="px-3 py-2">{r.staff?.fullName ?? '-'}</td>
@@ -56,7 +57,7 @@ export default function AppointmentTable({ rows, onChangeStatus, onOpenReschedul
                 <td className="px-3 py-2">
                   <div className="flex items-center gap-2">
                     {onOpenDetail && (
-                      <button className="btn-ghost" onClick={() => onOpenDetail(r.id)}>Xem chi tiết</button>
+                      <Button variant="ghost" size="sm" onClick={() => onOpenDetail(r.id)}>Xem chi tiết</Button>
                     )}
                     {onChangeStatus && (
                       <select
@@ -73,16 +74,16 @@ export default function AppointmentTable({ rows, onChangeStatus, onOpenReschedul
                       </select>
                     )}
                     {onOpenReschedule && (
-                      <button className="btn-ghost" onClick={() => onOpenReschedule(r.id)}>Dời lịch</button>
+                      <Button variant="ghost" size="sm" onClick={() => onOpenReschedule(r.id)}>Dời lịch</Button>
                     )}
                     {onOpenAssignDoctor && (
-                      <button className="btn-ghost" onClick={() => onOpenAssignDoctor(r.id)}>Gán bác sĩ</button>
+                      <Button variant="ghost" size="sm" onClick={() => onOpenAssignDoctor(r.id)}>Gán bác sĩ</Button>
                     )}
                     {onCreateMedicalRecord && (
-                      <button className="btn-ghost" onClick={() => onCreateMedicalRecord(r.id)}>Tạo bệnh án</button>
+                      <Button variant="secondary" size="sm" onClick={() => onCreateMedicalRecord(r.id)}>Tạo bệnh án</Button>
                     )}
                     {onDelete && (
-                      <button className="btn-ghost text-danger" onClick={() => onDelete(r.id)}>Xoá</button>
+                      <Button variant="danger" size="sm" onClick={() => onDelete(r.id)}>Xoá</Button>
                     )}
                   </div>
                 </td>

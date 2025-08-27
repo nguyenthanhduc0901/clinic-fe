@@ -9,10 +9,13 @@ import { listStaff } from '@/lib/api/staff'
 import { toast } from '@/components/ui/Toast'
 import Modal from '@/components/ui/Modal'
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts'
+import { useChartTheme, PIE_COLORS } from '@/lib/ui/chartTheme'
+import PanelErrorBoundary from '@/components/app/PanelErrorBoundary'
 
 type Filters = { date: string; q: string; status: '' | AppointmentStatus; staffId?: number; page: number; limit: number }
 
 export default function DashboardReceptionistPage() {
+  const chartTheme = useChartTheme()
   const [sp, setSp] = useSearchParams()
   const today = new Date().toISOString().slice(0, 10)
   const date = sp.get('date') || today
@@ -146,13 +149,14 @@ export default function DashboardReceptionistPage() {
 
       {/* Sidebar charts */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+        <PanelErrorBoundary title="Phân bố lịch hẹn hôm nay">
         <div className="card">
           <h2 className="text-sm font-medium mb-2">Phân bố lịch hẹn hôm nay</h2>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Tooltip />
-                <Legend />
+                <Tooltip wrapperStyle={chartTheme.tooltip.wrapperStyle} contentStyle={chartTheme.tooltip.contentStyle} labelStyle={chartTheme.tooltip.labelStyle} />
+                <Legend wrapperStyle={chartTheme.legend.wrapperStyle} />
                 <Pie dataKey="value" nameKey="name" data={toPie(summary.data)} outerRadius={90} label>
                   {toPie(summary.data).map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} />)}
                 </Pie>
@@ -160,20 +164,23 @@ export default function DashboardReceptionistPage() {
             </ResponsiveContainer>
           </div>
         </div>
+        </PanelErrorBoundary>
+        <PanelErrorBoundary title="Số lượng theo trạng thái">
         <div className="card lg:col-span-2">
           <h2 className="text-sm font-medium mb-2">Số lượng theo trạng thái</h2>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={toBar(summary.data)} margin={{ top: 10, right: 20, bottom: 0, left: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="status" tick={{ fontSize: 12 }} />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="count" fill="#2c7be5" />
+                <CartesianGrid strokeDasharray="3 3" stroke={chartTheme.gridStroke} />
+                <XAxis dataKey="status" tick={chartTheme.axisTick} />
+                <YAxis tick={chartTheme.axisTick} />
+                <Tooltip wrapperStyle={chartTheme.tooltip.wrapperStyle} contentStyle={chartTheme.tooltip.contentStyle} labelStyle={chartTheme.tooltip.labelStyle} />
+                <Bar dataKey="count" fill={chartTheme.colors.primary} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
+        </PanelErrorBoundary>
       </div>
 
       {/* Modals */}
@@ -450,7 +457,7 @@ function toBar(rec?: Record<string, number>) {
   return names.map((n) => ({ status: n, count: Number(rec?.[n] ?? 0) }))
 }
 
-const PIE_COLORS = ['#2c7be5','#10b981','#f59e0b','#ef4444','#8b5cf6','#06b6d4']
+// using PIE_COLORS from chartTheme
 
 function formatStatusLine(rec?: Record<string, number>) {
   if (!rec) return ''

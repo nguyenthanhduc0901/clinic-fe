@@ -3,6 +3,8 @@ import { resetPassword } from '@/lib/api/auth'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from '@/components/ui/Toast'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { FormField, Input } from '@/components/ui/Input'
+import Button from '@/components/ui/Button'
 
 export default function ResetPassword() {
 	const [sp] = useSearchParams()
@@ -20,12 +22,11 @@ export default function ResetPassword() {
 			<div className="w-full max-w-md card">
 				<h1 className="page-title mb-3">Đặt lại mật khẩu</h1>
 				<form className="space-y-3" onSubmit={handleSubmit((v)=> mut.mutate(v))}>
-					<div>
-						<label className="block text-sm mb-1">Mật khẩu mới</label>
-						<input className="w-full rounded-md border px-3 py-2" type="password" {...register('newPassword', { required: true })} />
-					</div>
+					<FormField id="newPassword" label="Mật khẩu mới">
+						<Input id="newPassword" type="password" {...register('newPassword', { required: true })} />
+					</FormField>
 					<div className="text-right">
-						<button className="btn-primary" disabled={isSubmitting || mut.isPending || !token}>Đặt lại</button>
+						<Button disabled={isSubmitting || mut.isPending || !token}>Đặt lại</Button>
 					</div>
 				</form>
 			</div>

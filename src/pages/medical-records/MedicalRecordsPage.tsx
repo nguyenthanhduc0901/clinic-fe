@@ -14,6 +14,9 @@ import { can } from '@/lib/auth/ability'
 import { AutocompleteInput } from '@/components/ui/AutocompleteInput'
 import AttachmentsPanel from '@/pages/medical-records/components/AttachmentsPanel'
 import MRUpdateModal from '@/pages/medical-records/components/MRUpdateModal'
+import { FormField, Input, Select } from '@/components/ui/Input'
+import Button from '@/components/ui/Button'
+import ConfirmModal from '@/components/ui/ConfirmModal'
 
 export default function MedicalRecordsPage() {
   const [sp, setSp] = useSearchParams()
@@ -69,12 +72,7 @@ export default function MedicalRecordsPage() {
   async function onExport(id: number) {
     try {
       const blob = await exportMedicalRecordPdf(id)
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `medical-record-${id}.pdf`
-      a.click()
-      URL.revokeObjectURL(url)
+      ;(await import('@/lib/utils/download')).downloadBlob(blob, `medical-record-${id}.pdf`)
     } catch (e: any) {
       toast.error(e?.message || 'Xuất PDF thất bại')
     }
@@ -116,49 +114,40 @@ export default function MedicalRecordsPage() {
             mapOption={(item) => ({ id: item.id, fullName: item.fullName })}
           />
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Từ ngày
-            </label>
-            <input 
-              className="rounded-md border px-3 py-2 w-full" 
-              type="date" 
-              value={dateFrom} 
+          <FormField id="mr-from" label="Từ ngày">
+            <Input
+              id="mr-from"
+              type="date"
+              value={dateFrom}
               onChange={(e) => setSp((p) => {
                 const v = e.target.value
                 if (v) p.set('dateFrom', v)
                 else p.delete('dateFrom')
                 p.set('page', '1')
                 return p
-              }, { replace: true })} 
+              }, { replace: true })}
             />
-          </div>
+          </FormField>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Đến ngày
-            </label>
-            <input 
-              className="rounded-md border px-3 py-2 w-full" 
-              type="date" 
-              value={dateTo} 
+          <FormField id="mr-to" label="Đến ngày">
+            <Input
+              id="mr-to"
+              type="date"
+              value={dateTo}
               onChange={(e) => setSp((p) => {
                 const v = e.target.value
                 if (v) p.set('dateTo', v)
                 else p.delete('dateTo')
                 p.set('page', '1')
                 return p
-              }, { replace: true })} 
+              }, { replace: true })}
             />
-          </div>
+          </FormField>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Trạng thái
-            </label>
-            <select 
-              className="rounded-md border px-3 py-2 w-full" 
-              value={status} 
+          <FormField id="mr-status" label="Trạng thái">
+            <Select
+              id="mr-status"
+              value={status}
               onChange={(e) => setSp((p) => {
                 const v = e.target.value
                 if (v) p.set('status', v)
@@ -171,19 +160,15 @@ export default function MedicalRecordsPage() {
               <option value="pending">Chờ xử lý</option>
               <option value="completed">Hoàn thành</option>
               <option value="cancelled">Đã hủy</option>
-            </select>
-          </div>
+            </Select>
+          </FormField>
 
           <div className="flex items-end">
             <div className="flex items-center gap-2">
               <span className="text-sm">Hiển thị</span>
-              <select 
-                className="rounded-md border px-2 py-1" 
-                value={limit} 
-                onChange={(e) => changeLimit(Number(e.target.value))}
-              >
+              <Select aria-label="Số dòng" value={String(limit)} onChange={(e)=> changeLimit(Number(e.target.value))}>
                 {[10, 20, 50].map(n => <option key={n} value={n}>{n}</option>)}
-              </select>
+              </Select>
             </div>
           </div>
         </div>
@@ -191,11 +176,11 @@ export default function MedicalRecordsPage() {
 
       <div className="card">
         {isLoading && <SkeletonTable rows={6} />}
-        {isError && <div className="text-danger">Tải dữ liệu thất bại</div>}
-        {!isLoading && !isError && (data?.data?.length ?? 0) === 0 && <div>Không có dữ liệu</div>}
+        {isError && <div className="text-danger">Tải dữ liệu thất bại <Button variant="ghost" onClick={()=> window.location.reload()}>Thử lại</Button></div>}
+        {!isLoading && !isError && (data?.data?.length ?? 0) === 0 && <div className="empty-state">Không có dữ liệu</div>}
         {!isLoading && !isError && (data?.data?.length ?? 0) > 0 && (
           <div className="overflow-x-auto">
-            <table className="min-w-full text-sm">
+            <table className="min-w-full text-sm table-fixed-header table-zebra table-hover">
               <thead>
                 <tr className="text-left text-slate-600">
                   <th className="px-3 py-2">Mã</th>
@@ -219,8 +204,8 @@ export default function MedicalRecordsPage() {
                       <span className={`inline-flex rounded-full px-2 py-0.5 text-xs ${statusColor(r.status)}`}>{r.status}</span>
                     </td>
                     <td className="px-3 py-2 flex gap-2">
-                      <button className="btn-ghost" onClick={() => { setDetailId(r.id); setSp((p)=> { p.set('recordId', String(r.id)); return p }, { replace: true }) }}>Chi tiết</button>
-                      <button className="btn-ghost" onClick={() => onExport(r.id)}>Xuất PDF</button>
+                      <Button variant="ghost" size="sm" onClick={() => { setDetailId(r.id); setSp((p)=> { p.set('recordId', String(r.id)); return p }, { replace: true }) }}>Chi tiết</Button>
+                      <Button variant="ghost" size="sm" onClick={() => onExport(r.id)}>Xuất PDF</Button>
                     </td>
                   </tr>
                 ))}
@@ -238,9 +223,9 @@ export default function MedicalRecordsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/40" onClick={() => { setDetailId(null); setSp((p)=> { p.delete('recordId'); return p }, { replace: true }) }} />
           <div className="relative z-10 w-full max-w-5xl rounded-lg bg-white dark:bg-slate-900 p-4">
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items_center justify-between mb-2">
               <h2 className="text-lg font-medium">Chi tiết hồ sơ #{detail.data.medicalRecord.id}</h2>
-              <button className="btn-ghost" onClick={() => { setDetailId(null); setSp((p)=> { p.delete('recordId'); return p }, { replace: true }) }}>Đóng</button>
+              <Button variant="ghost" onClick={() => { setDetailId(null); setSp((p)=> { p.delete('recordId'); return p }, { replace: true }) }}>Đóng</Button>
             </div>
             {can(perms, ['medical_record:update']) && <MRUpdateInline record={detail.data.medicalRecord} onUpdated={()=> detail.refetch()} />}
             <div className="grid grid-cols-2 gap-3 text-sm">
@@ -302,6 +287,7 @@ function PrescriptionRow({ recordId, p, canEdit }: { recordId: number; p: any; c
   const updateMut = useMutation({ mutationFn: (payload: any) => updatePrescription(recordId, p.id, payload), onSuccess: () => { toast.success('Cập nhật đơn thuốc'); qc.invalidateQueries({ queryKey: ['medical-record', recordId] }) }, onError: (e:any)=> toast.error(e?.response?.data?.message || 'Lỗi cập nhật') })
   const delMut = useMutation({ mutationFn: () => removePrescription(recordId, p.id), onSuccess: () => { toast.success('Xoá đơn thuốc'); qc.invalidateQueries({ queryKey: ['medical-record', recordId] }) }, onError: (e:any)=> toast.error(e?.response?.data?.message || 'Lỗi xoá') })
   const [detailOpen, setDetailOpen] = useState(false)
+  const [confirmDel, setConfirmDel] = useState(false)
   const detail = useQuery<{ data: any }>({ queryKey: ['prescription', p.id], enabled: detailOpen, queryFn: async ()=> ({ data: await getPrescription(recordId, p.id) }) })
   return (
     <tr className="border-t">
@@ -314,20 +300,23 @@ function PrescriptionRow({ recordId, p, canEdit }: { recordId: number; p: any; c
       </td>
       <td className="px-3 py-2">{p.usageInstruction ?? '-'}</td>
       <td className="px-3 py-2 flex gap-2">
-        <button className="btn-ghost" onClick={()=> setDetailOpen(true)}>Chi tiết</button>
-        <button className="btn-ghost" onClick={()=> delMut.mutate()} disabled={delMut.isPending || !canEdit}>Xoá</button>
+        <Button variant="ghost" size="sm" onClick={()=> setDetailOpen(true)}>Chi tiết</Button>
+        <Button variant="danger" size="sm" onClick={()=> setConfirmDel(true)} disabled={delMut.isPending || !canEdit}>Xoá</Button>
+        <ConfirmModal open={confirmDel} title={`Xoá dòng đơn thuốc #${p.id}?`} onClose={()=> setConfirmDel(false)} onConfirm={()=> delMut.mutate()} loading={delMut.isPending} confirmText="Xoá">
+          <div className="text-sm">Thao tác này không thể hoàn tác.</div>
+        </ConfirmModal>
         {detailOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-black/40" onClick={()=> setDetailOpen(false)} />
             <div className="relative z-10 w-full max-w-md rounded-lg bg-white dark:bg-slate-900 p-4">
               <div className="flex items-center justify-between mb-2">
                 <h4 className="font-medium">Chi tiết đơn thuốc #{p.id}</h4>
-                <button className="btn-ghost" onClick={()=> setDetailOpen(false)}>Đóng</button>
+                <Button variant="ghost" onClick={()=> setDetailOpen(false)}>Đóng</Button>
               </div>
               {detail.isLoading && <div>Đang tải...</div>}
               {detail.isError && <div className="text-danger">Tải chi tiết thất bại</div>}
               {!detail.isLoading && !detail.isError && detail.data && (
-                <div className="space-y-1 text-sm">
+                <div className="space-y-1 text_sm">
                   <div><strong>medicineId:</strong> {detail.data.data.medicineId}</div>
                   <div><strong>quantity:</strong> {detail.data.data.quantity}</div>
                   <div><strong>usageInstructionId:</strong> {detail.data.data.usageInstructionId}</div>
@@ -363,24 +352,24 @@ function AddPrescriptionRow({ recordId, canEdit }: { recordId: number; canEdit: 
   return (
     <div className="grid grid-cols-4 gap-2">
       <div>
-        <input className="w-full rounded-md border px-3 py-2" placeholder="Tìm thuốc..." value={q} onChange={(e)=> setQ(e.target.value)} disabled={!canEdit} />
-        <select className="w-full rounded-md border px-3 py-2 mt-1" value={form.medicineId || ''} onChange={(e)=> setForm((f)=> ({ ...f, medicineId: e.target.value ? Number(e.target.value) : undefined }))} disabled={!canEdit}>
+        <Input className="w-full" placeholder="Tìm thuốc..." value={q} onChange={(e)=> setQ(e.target.value)} disabled={!canEdit} />
+        <Select className="w-full mt-1" value={form.medicineId || ''} onChange={(e)=> setForm((f)=> ({ ...f, medicineId: e.target.value ? Number(e.target.value) : undefined }))} disabled={!canEdit}>
           <option value="">-- chọn thuốc --</option>
           {(meds.data?.data ?? []).map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
-        </select>
+        </Select>
       </div>
       <div>
-        <input className="w-full rounded-md border px-3 py-2" type="number" placeholder="Số lượng" value={form.quantity ?? ''} onChange={(e)=> setForm((f)=> ({ ...f, quantity: e.target.value ? Number(e.target.value) : undefined }))} disabled={!canEdit} />
+        <Input className="w-full" type="number" placeholder="Số lượng" value={form.quantity ?? ''} onChange={(e)=> setForm((f)=> ({ ...f, quantity: e.target.value ? Number(e.target.value) : undefined }))} disabled={!canEdit} />
       </div>
       <div>
-        <select className="w-full rounded-md border px-3 py-2" value={form.usageInstructionId || ''} onChange={(e)=> setForm((f)=> ({ ...f, usageInstructionId: e.target.value ? Number(e.target.value) : undefined }))} disabled={!canEdit}>
+        <Select className="w-full" value={form.usageInstructionId || ''} onChange={(e)=> setForm((f)=> ({ ...f, usageInstructionId: e.target.value ? Number(e.target.value) : undefined }))} disabled={!canEdit}>
           <option value="">-- hướng dẫn sử dụng --</option>
           {(catalogs.data?.usageInstructions ?? []).map((u) => <option key={u.id} value={u.id}>{u.instruction}</option>)}
-        </select>
+        </Select>
       </div>
       <div className="flex gap-2">
-        <input className="w-full rounded-md border px-3 py-2" placeholder="Ghi chú" value={form.notes ?? ''} onChange={(e)=> setForm((f)=> ({ ...f, notes: e.target.value }))} disabled={!canEdit} />
-        <button className="btn" onClick={()=> addMut.mutate()} disabled={addMut.isPending || !isReady || !canEdit}>Thêm dòng</button>
+        <Input className="w-full" placeholder="Ghi chú" value={form.notes ?? ''} onChange={(e)=> setForm((f)=> ({ ...f, notes: e.target.value }))} disabled={!canEdit} />
+        <Button onClick={()=> addMut.mutate()} disabled={addMut.isPending || !isReady || !canEdit}>Thêm dòng</Button>
       </div>
     </div>
   )

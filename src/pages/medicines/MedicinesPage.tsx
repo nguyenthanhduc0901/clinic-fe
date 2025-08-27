@@ -12,6 +12,10 @@ import { useAuthStore } from '@/lib/auth/authStore'
 import { can } from '@/lib/auth/ability'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from '@/components/ui/Toast'
+import { FormField, Input, Select } from '@/components/ui/Input'
+import { SkeletonTable } from '@/components/ui/Skeleton'
+import Button from '@/components/ui/Button'
+import ConfirmModal from '@/components/ui/ConfirmModal'
 
 export default function MedicinesPage() {
   const [sp, setSp] = useSearchParams()
@@ -78,6 +82,7 @@ export default function MedicinesPage() {
   // const [edit, setEdit] = useState<{ id: number | null }>({ id: null })
   const [importState, setImportState] = useState<{ id: number | null }>({ id: null })
   const [adjustState, setAdjustState] = useState<{ id: number | null }>({ id: null })
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
 
   return (
     <div className="space-y-3">
@@ -88,32 +93,46 @@ export default function MedicinesPage() {
 
       <div className="card">
         <div className="grid grid-cols-1 md:grid-cols-6 gap-2">
-          <input className="rounded-md border px-3 py-2" placeholder="Tìm thuốc" defaultValue={q} onChange={(e) => setSp((p)=>{ const v=e.target.value; if(v) p.set('q', v); else p.delete('q'); p.set('page','1'); return p }, { replace:true })} />
-          <select className="rounded-md border px-3 py-2" value={unitId ?? ''} onChange={(e) => setSp((p)=>{ const v=e.target.value; if(v) p.set('unitId', v); else p.delete('unitId'); p.set('page','1'); return p }, { replace:true })}>
-            <option value="">Tất cả đơn vị</option>
-            {(catalogs.data?.units ?? []).map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
-          </select>
-          <input className="rounded-md border px-3 py-2" type="number" placeholder="Supplier ID" defaultValue={supplierId ?? ''} onBlur={(e)=> setSp((p)=>{ const v=e.target.value.trim(); if(v) p.set('supplierId', v); else p.delete('supplierId'); p.set('page','1'); return p }, { replace:true })} />
-          <input className="rounded-md border px-3 py-2" type="number" placeholder="Giá từ" defaultValue={priceMin ?? ''} onBlur={(e)=> setSp((p)=>{ const v=e.target.value.trim(); if(v) p.set('priceMin', v); else p.delete('priceMin'); p.set('page','1'); return p }, { replace:true })} />
-          <input className="rounded-md border px-3 py-2" type="number" placeholder="Giá đến" defaultValue={priceMax ?? ''} onBlur={(e)=> setSp((p)=>{ const v=e.target.value.trim(); if(v) p.set('priceMax', v); else p.delete('priceMax'); p.set('page','1'); return p }, { replace:true })} />
-          <input className="rounded-md border px-3 py-2" type="number" placeholder="Tồn từ" defaultValue={stockMin ?? ''} onBlur={(e)=> setSp((p)=>{ const v=e.target.value.trim(); if(v) p.set('stockMin', v); else p.delete('stockMin'); p.set('page','1'); return p }, { replace:true })} />
-          <input className="rounded-md border px-3 py-2" type="number" placeholder="Tồn đến" defaultValue={stockMax ?? ''} onBlur={(e)=> setSp((p)=>{ const v=e.target.value.trim(); if(v) p.set('stockMax', v); else p.delete('stockMax'); p.set('page','1'); return p }, { replace:true })} />
-          <div className="flex items-center gap-2">
+          <FormField id="med-q" label="Tìm thuốc">
+            <Input id="med-q" placeholder="Nhập tên thuốc" defaultValue={q} onChange={(e) => setSp((p)=>{ const v=e.target.value; if(v) p.set('q', v); else p.delete('q'); p.set('page','1'); return p }, { replace:true })} />
+          </FormField>
+          <FormField id="med-unit" label="Đơn vị">
+            <Select id="med-unit" value={unitId ?? ''} onChange={(e) => setSp((p)=>{ const v=e.target.value; if(v) p.set('unitId', v); else p.delete('unitId'); p.set('page','1'); return p }, { replace:true })}>
+              <option value="">Tất cả đơn vị</option>
+              {(catalogs.data?.units ?? []).map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
+            </Select>
+          </FormField>
+          <FormField id="med-sup" label="Supplier ID">
+            <Input id="med-sup" type="number" placeholder="Supplier ID" defaultValue={supplierId ?? ''} onBlur={(e)=> setSp((p)=>{ const v=e.target.value.trim(); if(v) p.set('supplierId', v); else p.delete('supplierId'); p.set('page','1'); return p }, { replace:true })} />
+          </FormField>
+          <FormField id="med-price-min" label="Giá từ">
+            <Input id="med-price-min" type="number" placeholder="Giá từ" defaultValue={priceMin ?? ''} onBlur={(e)=> setSp((p)=>{ const v=e.target.value.trim(); if(v) p.set('priceMin', v); else p.delete('priceMin'); p.set('page','1'); return p }, { replace:true })} />
+          </FormField>
+          <FormField id="med-price-max" label="Giá đến">
+            <Input id="med-price-max" type="number" placeholder="Giá đến" defaultValue={priceMax ?? ''} onBlur={(e)=> setSp((p)=>{ const v=e.target.value.trim(); if(v) p.set('priceMax', v); else p.delete('priceMax'); p.set('page','1'); return p }, { replace:true })} />
+          </FormField>
+          <FormField id="med-stock-min" label="Tồn từ">
+            <Input id="med-stock-min" type="number" placeholder="Tồn từ" defaultValue={stockMin ?? ''} onBlur={(e)=> setSp((p)=>{ const v=e.target.value.trim(); if(v) p.set('stockMin', v); else p.delete('stockMin'); p.set('page','1'); return p }, { replace:true })} />
+          </FormField>
+          <FormField id="med-stock-max" label="Tồn đến">
+            <Input id="med-stock-max" type="number" placeholder="Tồn đến" defaultValue={stockMax ?? ''} onBlur={(e)=> setSp((p)=>{ const v=e.target.value.trim(); if(v) p.set('stockMax', v); else p.delete('stockMax'); p.set('page','1'); return p }, { replace:true })} />
+          </FormField>
+          <div className="flex items-end gap-2">
             <span className="text-sm">Hiển thị</span>
-            <select className="rounded-md border px-2 py-1" value={limit} onChange={(e)=> changeLimit(Number(e.target.value))}>
+            <Select aria-label="Số dòng" value={String(limit)} onChange={(e)=> changeLimit(Number(e.target.value))}>
               {[10,20,50].map(n=> <option key={n} value={n}>{n}</option>)}
-            </select>
+            </Select>
           </div>
         </div>
       </div>
 
       <div className="card">
-        {isLoading && <div>Đang tải...</div>}
+        {isLoading && <SkeletonTable rows={6} />}
         {isError && <div className="text-danger">Tải dữ liệu thất bại</div>}
-        {!isLoading && !isError && (data?.data?.length ?? 0) === 0 && <div>Không có dữ liệu</div>}
+        {!isLoading && !isError && (data?.data?.length ?? 0) === 0 && <div className="empty-state">Không có dữ liệu</div>}
         {!isLoading && !isError && (data?.data?.length ?? 0) > 0 && (
           <div className="overflow-x-auto">
-            <table className="min-w-full text-sm">
+            <table className="min-w-full text-sm table-fixed-header table-zebra table-hover">
               <thead>
                 <tr className="text-left text-slate-600">
                   <th className="px-3 py-2">Tên thuốc</th>
@@ -134,9 +153,9 @@ export default function MedicinesPage() {
                     <td className="px-3 py-2 max-w-[280px] truncate" title={m.description ?? ''}>{m.description ?? '-'}</td>
                     {(canDelete || canImport || canAdjust) && (
                       <td className="px-3 py-2 flex flex-wrap gap-2">
-                        {canDelete && <button className="btn-ghost" onClick={()=> window.confirm('Xoá thuốc này?') && delMut.mutate(m.id)}>Xóa</button>}
-                        {canImport && <button className="btn-ghost" onClick={()=> setImportState({ id: m.id })}>Nhập kho</button>}
-                        {canAdjust && <button className="btn-ghost" onClick={()=> setAdjustState({ id: m.id })}>Điều chỉnh số lượng</button>}
+                        {canDelete && <Button variant="danger" size="sm" onClick={()=> setConfirmDeleteId(m.id)}>Xóa</Button>}
+                        {canImport && <Button variant="ghost" size="sm" onClick={()=> setImportState({ id: m.id })}>Nhập kho</Button>}
+                        {canAdjust && <Button variant="ghost" size="sm" onClick={()=> setAdjustState({ id: m.id })}>Điều chỉnh số lượng</Button>}
                       </td>
                     )}
                   </tr>
@@ -156,6 +175,18 @@ export default function MedicinesPage() {
       {/* Create/Edit modals not available in this build */}
       {canImport && importState.id != null && <ImportStockModal open={!!importState.id} onClose={()=> setImportState({ id: null })} id={importState.id!} />}
       {canAdjust && adjustState.id != null && <AdjustStockModal open={!!adjustState.id} onClose={()=> setAdjustState({ id: null })} id={adjustState.id!} />}
+
+      {confirmDeleteId != null && (
+        <ConfirmModal
+          open={true}
+          title={`Xoá thuốc #${confirmDeleteId}?`}
+          onClose={()=> setConfirmDeleteId(null)}
+          onConfirm={()=> { delMut.mutate(confirmDeleteId!); setConfirmDeleteId(null) }}
+          confirmText="Xoá"
+        >
+          <div className="text-sm">Thao tác này không thể hoàn tác.</div>
+        </ConfirmModal>
+      )}
     </div>
   )
 }
@@ -168,7 +199,7 @@ function MedicineDetail({ id, onClose }: { id: number; onClose: () => void }) {
       <div className="relative z-10 w-full max-w-md bg-white dark:bg-slate-900 p-4 overflow-y-auto">
         <div className="flex items-center justify-between mb-2">
           <h2 className="text-lg font-medium">Chi tiết thuốc #{id}</h2>
-          <button className="btn-ghost" onClick={onClose}>Đóng</button>
+          <Button variant="ghost" onClick={onClose}>Đóng</Button>
         </div>
         {detail.isLoading && <div>Đang tải...</div>}
         {detail.isError && <div className="text-danger">Tải dữ liệu thất bại</div>}

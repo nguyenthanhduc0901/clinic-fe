@@ -1,12 +1,15 @@
 import { useSearchParams } from 'react-router-dom'
 import { useMemo, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { listImportsAdvanced as listImports, createImport, type MedicineImport } from '@/lib/api/inventory'
+import { listImportsAdvanced as listImports, createImport, type MedicineImport } from '../../lib/api/inventory'
 import ImportDetailModal from '@/pages/inventory/ImportDetailModal'
 import Pagination from '@/components/ui/Pagination'
 import Modal from '@/components/ui/Modal'
 import { useForm } from 'react-hook-form'
 import { toast } from '@/components/ui/Toast'
+import { FormField, Input, Select } from '@/components/ui/Input'
+import { SkeletonTable } from '@/components/ui/Skeleton'
+import Button from '@/components/ui/Button'
 
 export default function ImportsPage() {
 	const [sp, setSp] = useSearchParams()
@@ -41,32 +44,46 @@ export default function ImportsPage() {
 		<div className="space-y-3">
 			<div className="flex items-center justify-between">
 				<h1 className="page-title">Inventory Imports</h1>
-				<button className="btn-primary" onClick={() => setCreateOpen(true)}>Tạo phiếu nhập</button>
+				<Button onClick={() => setCreateOpen(true)}>Tạo phiếu nhập</Button>
 			</div>
 
 			<div className="card">
 				<div className="grid grid-cols-1 md:grid-cols-6 gap-2">
-					<input className="rounded-md border px-3 py-2" type="number" placeholder="Medicine ID" defaultValue={medicineId ?? ''} onBlur={(e)=> setSp((p)=>{ const v=e.target.value.trim(); if(v) p.set('medicineId', v); else p.delete('medicineId'); p.set('page','1'); return p }, { replace:true })} />
-					<input className="rounded-md border px-3 py-2" type="number" placeholder="Supplier ID" defaultValue={supplierId ?? ''} onBlur={(e)=> setSp((p)=>{ const v=e.target.value.trim(); if(v) p.set('supplierId', v); else p.delete('supplierId'); p.set('page','1'); return p }, { replace:true })} />
-					<input className="rounded-md border px-3 py-2" type="date" placeholder="Từ ngày" defaultValue={dateFrom ?? ''} onBlur={(e)=> setSp((p)=>{ const v=e.target.value.trim(); if(v) p.set('dateFrom', v); else p.delete('dateFrom'); p.set('page','1'); return p }, { replace:true })} />
-					<input className="rounded-md border px-3 py-2" type="date" placeholder="Đến ngày" defaultValue={dateTo ?? ''} onBlur={(e)=> setSp((p)=>{ const v=e.target.value.trim(); if(v) p.set('dateTo', v); else p.delete('dateTo'); p.set('page','1'); return p }, { replace:true })} />
-					<input className="rounded-md border px-3 py-2" placeholder="Lot Number" defaultValue={lotNumber ?? ''} onBlur={(e)=> setSp((p)=>{ const v=e.target.value.trim(); if(v) p.set('lotNumber', v); else p.delete('lotNumber'); p.set('page','1'); return p }, { replace:true })} />
-					<input className="rounded-md border px-3 py-2" type="date" placeholder="HSD từ" defaultValue={expirationDateFrom ?? ''} onBlur={(e)=> setSp((p)=>{ const v=e.target.value.trim(); if(v) p.set('expirationDateFrom', v); else p.delete('expirationDateFrom'); p.set('page','1'); return p }, { replace:true })} />
-					<input className="rounded-md border px-3 py-2" type="date" placeholder="HSD đến" defaultValue={expirationDateTo ?? ''} onBlur={(e)=> setSp((p)=>{ const v=e.target.value.trim(); if(v) p.set('expirationDateTo', v); else p.delete('expirationDateTo'); p.set('page','1'); return p }, { replace:true })} />
-					<div className="flex items-center gap-2">
+					<FormField id="imp-med" label="Medicine ID">
+						<Input id="imp-med" type="number" defaultValue={medicineId ?? ''} onBlur={(e)=> setSp((p)=>{ const v=e.target.value.trim(); if(v) p.set('medicineId', v); else p.delete('medicineId'); p.set('page','1'); return p }, { replace:true })} />
+					</FormField>
+					<FormField id="imp-sup" label="Supplier ID">
+						<Input id="imp-sup" type="number" defaultValue={supplierId ?? ''} onBlur={(e)=> setSp((p)=>{ const v=e.target.value.trim(); if(v) p.set('supplierId', v); else p.delete('supplierId'); p.set('page','1'); return p }, { replace:true })} />
+					</FormField>
+					<FormField id="imp-from" label="Từ ngày">
+						<Input id="imp-from" type="date" defaultValue={dateFrom ?? ''} onBlur={(e)=> setSp((p)=>{ const v=e.target.value.trim(); if(v) p.set('dateFrom', v); else p.delete('dateFrom'); p.set('page','1'); return p }, { replace:true })} />
+					</FormField>
+					<FormField id="imp-to" label="Đến ngày">
+						<Input id="imp-to" type="date" defaultValue={dateTo ?? ''} onBlur={(e)=> setSp((p)=>{ const v=e.target.value.trim(); if(v) p.set('dateTo', v); else p.delete('dateTo'); p.set('page','1'); return p }, { replace:true })} />
+					</FormField>
+					<FormField id="imp-lot" label="Lot Number">
+						<Input id="imp-lot" defaultValue={lotNumber ?? ''} onBlur={(e)=> setSp((p)=>{ const v=e.target.value.trim(); if(v) p.set('lotNumber', v); else p.delete('lotNumber'); p.set('page','1'); return p }, { replace:true })} />
+					</FormField>
+					<FormField id="imp-exp-from" label="HSD từ">
+						<Input id="imp-exp-from" type="date" defaultValue={expirationDateFrom ?? ''} onBlur={(e)=> setSp((p)=>{ const v=e.target.value.trim(); if(v) p.set('expirationDateFrom', v); else p.delete('expirationDateFrom'); p.set('page','1'); return p }, { replace:true })} />
+					</FormField>
+					<FormField id="imp-exp-to" label="HSD đến">
+						<Input id="imp-exp-to" type="date" defaultValue={expirationDateTo ?? ''} onBlur={(e)=> setSp((p)=>{ const v=e.target.value.trim(); if(v) p.set('expirationDateTo', v); else p.delete('expirationDateTo'); p.set('page','1'); return p }, { replace:true })} />
+					</FormField>
+					<div className="flex items-end gap-2">
 						<span className="text-sm">Hiển thị</span>
-						<select className="rounded-md border px-2 py-1" value={limit} onChange={(e)=> changeLimit(Number(e.target.value))}>{[10,20,50].map(n=> <option key={n} value={n}>{n}</option>)}</select>
+						<Select aria-label="Số dòng" value={String(limit)} onChange={(e)=> changeLimit(Number(e.target.value))}>{[10,20,50].map(n=> <option key={n} value={n}>{n}</option>)}</Select>
 					</div>
 				</div>
 			</div>
 
 			<div className="card">
-				{isLoading && <div>Đang tải...</div>}
+				{isLoading && <SkeletonTable rows={6} />}
 				{isError && <div className="text-danger">Tải dữ liệu thất bại</div>}
-				{!isLoading && !isError && (data?.data?.length ?? 0) === 0 && <div>Không có dữ liệu</div>}
+				{!isLoading && !isError && (data?.data?.length ?? 0) === 0 && <div className="empty-state">Không có dữ liệu</div>}
 				{!isLoading && !isError && (data?.data?.length ?? 0) > 0 && (
 					<div className="overflow-x-auto">
-						<table className="min-w-full text-sm">
+						<table className="min-w-full text-sm table-fixed-header table-zebra table-hover">
 							<thead>
 								<tr className="text-left text-slate-600">
 									<th className="px-3 py-2">Mã</th>
@@ -93,7 +110,7 @@ export default function ImportsPage() {
 										<td className="px-3 py-2">{r.lotNumber ?? '-'}</td>
 										<td className="px-3 py-2">{r.expirationDate ?? '-'}</td>
 										<td className="px-3 py-2">{r.importedAt ? new Date(r.importedAt).toLocaleString('vi-VN') : '-'}</td>
-										<td className="px-3 py-2"><button className="btn-ghost" onClick={()=> setDetailId(r.id)}>Chi tiết</button></td>
+										<td className="px-3 py-2"><Button variant="ghost" size="sm" onClick={()=> setDetailId(r.id)}>Chi tiết</Button></td>
 									</tr>
 								))}
 							</tbody>

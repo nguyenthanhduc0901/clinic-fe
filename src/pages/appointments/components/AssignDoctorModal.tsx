@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { listStaff } from '@/lib/api/staff'
 import { AutocompleteInput } from '@/components/ui/AutocompleteInput'
+import Modal from '@/components/ui/Modal'
+import Button from '@/components/ui/Button'
 
 type Props = {
 	open: boolean
@@ -17,10 +19,8 @@ export default function AssignDoctorModal({ open, onClose, onAssign, canReadStaf
 	if (!open) return null
 
 	return (
-		<div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-			<div className="absolute inset-0 bg-black/40" onClick={onClose} />
-			<div className="relative z-10 w-full max-w-lg rounded-lg bg-white dark:bg-slate-900 p-4 space-y-3">
-				<h2 className="text-lg font-medium">Assign Doctor</h2>
+		<Modal open={open} onClose={onClose} title="Gán bác sĩ">
+			<div className="space-y-3">
 				{canReadStaff ? (
 					<AutocompleteInput
 						label="Bác sĩ"
@@ -35,12 +35,12 @@ export default function AssignDoctorModal({ open, onClose, onAssign, canReadStaf
 					<div className="text-sm text-slate-600">Bạn không có quyền xem danh sách bác sĩ.</div>
 				)}
 				<div className="flex justify-end gap-2">
-					<button className="btn-ghost" onClick={onClose} disabled={loading}>Đóng</button>
-					<button className="btn" onClick={() => onAssign(null)} disabled={loading}>Bỏ gán</button>
-					<button className="btn-primary" onClick={() => onAssign(selectedId ?? null)} disabled={loading || !selectedId}>Gán bác sĩ</button>
+					<Button variant="ghost" onClick={onClose} disabled={loading}>Đóng</Button>
+					<Button onClick={() => onAssign(null)} disabled={loading}>Bỏ gán</Button>
+					<Button onClick={() => onAssign(selectedId ?? null)} disabled={loading || !selectedId}>Gán bác sĩ</Button>
 				</div>
 			</div>
-		</div>
+		</Modal>
 	)
 }
 

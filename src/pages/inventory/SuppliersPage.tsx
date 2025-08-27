@@ -1,13 +1,17 @@
 import { useSearchParams } from 'react-router-dom'
 import { useMemo, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { listSuppliers, createSupplier, updateSupplier, deleteSupplier, type Supplier, getSupplier } from '@/lib/api/inventory'
+import { listSuppliers, createSupplier, updateSupplier, deleteSupplier, type Supplier, getSupplier } from '../../lib/api/inventory'
 import Pagination from '@/components/ui/Pagination'
 import Modal from '@/components/ui/Modal'
 import { useForm } from 'react-hook-form'
 import { useAuthStore } from '@/lib/auth/authStore'
 import { can } from '@/lib/auth/ability'
 import { toast } from '@/components/ui/Toast'
+import { FormField, Input, Select } from '@/components/ui/Input'
+import { SkeletonTable } from '@/components/ui/Skeleton'
+import Button from '@/components/ui/Button'
+import ConfirmModal from '@/components/ui/ConfirmModal'
 
 export default function SuppliersPage() {
 	const [sp, setSp] = useSearchParams()
@@ -21,7 +25,7 @@ export default function SuppliersPage() {
 	const canViewList = can(perms, ['permission:manage']) && can(perms, ['medicine:import'])
 
 	const params = useMemo(() => ({ page, limit, q: q || undefined }), [page, limit, q])
-	const { data, isLoading, isError } = useQuery<{ data: Supplier[]; total: number }>({
+	const { data, isLoading, isError, refetch } = useQuery<{ data: Supplier[]; total: number }>({
 		queryKey: ['suppliers', params],
 		queryFn: () => listSuppliers(params),
 		enabled: canViewList,
@@ -35,6 +39,7 @@ export default function SuppliersPage() {
 
 	const [modal, setModal] = useState<{ mode: 'create' | 'edit' | null; supplier?: Supplier | null }>({ mode: null, supplier: null })
 	const [detailId, setDetailId] = useState<number | null>(null)
+	const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
 	const qc = useQueryClient()
 	const createMut = useMutation({
 		mutationFn: (payload: Partial<Supplier> & { name: string }) => createSupplier(payload),
@@ -53,15 +58,17 @@ export default function SuppliersPage() {
 		<div className="space-y-3">
 			<div className="flex items-center justify-between">
 				<h1 className="page-title">Suppliers</h1>
-				{canManage && <button className="btn-primary" onClick={() => setModal({ mode: 'create' })}>Thêm NCC</button>}
+				{canManage && <Button onClick={() => setModal({ mode: 'create' })}>Thêm NCC</Button>}
 			</div>
 
 			<div className="card">
-				<div className="flex flex-wrap items-center gap-2">
-					<input className="rounded-md border px-3 py-2" placeholder="Tìm NCC" defaultValue={q} onChange={(e)=> setSp((p)=>{ const v=e.target.value; if(v) p.set('q', v); else p.delete('q'); p.set('page','1'); return p }, { replace: true })} />
-					<div className="ml-auto flex items-center gap-2">
+				<div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+					<FormField id="q" label="Tìm NCC">
+						<Input id="q" placeholder="Nhập tên/điện thoại/email" defaultValue={q} onChange={(e)=> setSp((p)=>{ const v=e.target.value; if(v) p.set('q', v); else p.delete('q'); p.set('page','1'); return p }, { replace: true })} />
+					</FormField>
+					<div className="flex items-end gap-2 ml-auto">
 						<span className="text-sm">Hiển thị</span>
-						<select className="rounded-md border px-2 py-1" value={limit} onChange={(e)=> changeLimit(Number(e.target.value))}>{[10,20,50].map(n=> <option key={n} value={n}>{n}</option>)}</select>
+						<Select aria-label="Số dòng" value={String(limit)} onChange={(e)=> changeLimit(Number(e.target.value))}>{[10,20,50].map(n=> <option key={n} value={n}>{n}</option>)}</Select>
 					</div>
 				</div>
 			</div>
@@ -70,12 +77,12 @@ export default function SuppliersPage() {
 				<div className="card text-sm text-slate-600">Không đủ quyền để xem danh sách nhà cung cấp.</div>
 			) : (
 				<div className="card">
-					{isLoading && <div>Đang tải...</div>}
-					{isError && <div className="text-danger">Tải dữ liệu thất bại</div>}
-					{!isLoading && !isError && (data?.data?.length ?? 0) === 0 && <div>Không có dữ liệu</div>}
+					{isLoading && <SkeletonTable rows={6} />}
+					{isError && <div className="text-danger">Tải dữ liệu thất bại <button className="btn-ghost" onClick={()=> refetch()}>Thử lại</button></div>}
+					{!isLoading && !isError && (data?.data?.length ?? 0) === 0 && <div className="empty-state">Không có dữ liệu</div>}
 					{!isLoading && !isError && (data?.data?.length ?? 0) > 0 && (
 						<div className="overflow-x-auto">
-							<table className="min-w-full text-sm">
+							<table className="min-w-full text-sm table-fixed-header table-zebra table-hover">
 								<thead>
 									<tr className="text-left text-slate-600">
 										<th className="px-3 py-2">Tên</th>
@@ -95,9 +102,9 @@ export default function SuppliersPage() {
 											<td className="px-3 py-2">{s.email ?? '-'}</td>
 											<td className="px-3 py-2 max-w-[280px] truncate" title={s.address ?? ''}>{s.address ?? '-'}</td>
 											<td className="px-3 py-2 flex gap-2">
-												<button className="btn-ghost" onClick={()=> setDetailId(s.id)}>Xem chi tiết</button>
-												{canManage && <button className="btn-ghost" onClick={()=> setModal({ mode: 'edit', supplier: s })}>Cập nhật</button>}
-												{canManage && <button className="btn-ghost" onClick={()=> window.confirm('Xoá nhà cung cấp này?') && deleteMut.mutate(s.id)}>Xóa</button>}
+												<Button variant="ghost" size="sm" onClick={()=> setDetailId(s.id)}>Xem chi tiết</Button>
+												{canManage && <Button variant="ghost" size="sm" onClick={()=> setModal({ mode: 'edit', supplier: s })}>Cập nhật</Button>}
+												{canManage && <Button variant="danger" size="sm" onClick={()=> setConfirmDeleteId(s.id)}>Xóa</Button>}
 											</td>
 										</tr>
 									))}
@@ -123,6 +130,18 @@ export default function SuppliersPage() {
 			{detailId != null && (
 				<SupplierDetailDrawer id={detailId} onClose={()=> setDetailId(null)} />
 			)}
+
+			{confirmDeleteId != null && (
+				<ConfirmModal
+					open={true}
+					title={`Xóa nhà cung cấp #${confirmDeleteId}?`}
+					onClose={()=> setConfirmDeleteId(null)}
+					onConfirm={()=> { deleteMut.mutate(confirmDeleteId!); setConfirmDeleteId(null) }}
+					confirmText="Xóa"
+				>
+					<div className="text-sm">Thao tác này không thể hoàn tác.</div>
+				</ConfirmModal>
+			)}
 		</div>
 	)
 }
@@ -134,33 +153,28 @@ function SupplierModal({ mode, supplier, onClose, onSubmit }: { mode: 'create' |
 	return (
 		<Modal open onClose={onClose} title={mode === 'create' ? 'Thêm NCC' : `Sửa NCC #${supplier?.id}`}>
 			<form className="space-y-3" onSubmit={handleSubmit(onSubmit)}>
-				<div>
-					<label className="block text-sm mb-1">Tên</label>
-					<input className="w-full rounded-md border px-3 py-2" {...register('name', { required: true })} />
+				<FormField id="name" label="Tên">
+					<Input id="name" {...register('name', { required: true })} />
+				</FormField>
+				<div className="grid grid-cols-2 gap-2">
+					<FormField id="contactPerson" label="Liên hệ">
+						<Input id="contactPerson" {...register('contactPerson')} />
+					</FormField>
+					<FormField id="phone" label="Phone">
+						<Input id="phone" {...register('phone')} />
+					</FormField>
 				</div>
 				<div className="grid grid-cols-2 gap-2">
-					<div>
-						<label className="block text-sm mb-1">Liên hệ</label>
-						<input className="w-full rounded-md border px-3 py-2" {...register('contactPerson')} />
-					</div>
-					<div>
-						<label className="block text-sm mb-1">Phone</label>
-						<input className="w-full rounded-md border px-3 py-2" {...register('phone')} />
-					</div>
-				</div>
-				<div className="grid grid-cols-2 gap-2">
-					<div>
-						<label className="block text-sm mb-1">Email</label>
-						<input className="w-full rounded-md border px-3 py-2" {...register('email')} />
-					</div>
-					<div>
-						<label className="block text-sm mb-1">Địa chỉ</label>
-						<input className="w-full rounded-md border px-3 py-2" {...register('address')} />
-					</div>
+					<FormField id="email" label="Email">
+						<Input id="email" type="email" {...register('email')} />
+					</FormField>
+					<FormField id="address" label="Địa chỉ">
+						<Input id="address" {...register('address')} />
+					</FormField>
 				</div>
 				<div className="flex justify-end gap-2">
-					<button type="button" className="btn-ghost" onClick={onClose}>Hủy</button>
-					<button className="btn-primary" disabled={isSubmitting}>{mode === 'create' ? 'Tạo mới' : 'Lưu thay đổi'}</button>
+					<Button type="button" variant="ghost" onClick={onClose}>Hủy</Button>
+					<Button type="submit" loading={isSubmitting}>{mode === 'create' ? 'Tạo mới' : 'Lưu thay đổi'}</Button>
 				</div>
 			</form>
 		</Modal>
@@ -172,7 +186,7 @@ function SupplierDetailDrawer({ id, onClose }: { id: number; onClose: () => void
 	return (
 		<div className="fixed inset-0 z-50 flex">
 			<div className="flex-1 bg-black/40" onClick={onClose} />
-			<div className="relative z-10 w-full max-w-md bg-white dark:bg-slate-900 p-4 overflow-y-auto">
+			<div className="relative z-10 w-full max-w-md bg_white dark:bg-slate-900 p-4 overflow-y-auto">
 				<div className="flex items-center justify-between mb-2">
 					<h2 className="text-lg font-medium">Chi tiết NCC #{id}</h2>
 					<button className="btn-ghost" onClick={onClose}>Đóng</button>

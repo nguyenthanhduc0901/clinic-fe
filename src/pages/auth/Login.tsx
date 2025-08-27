@@ -6,6 +6,8 @@ import { getDefaultRouteForRole } from '@/lib/auth/ability'
 import { useNavigate } from 'react-router-dom'
 import { api } from '@/lib/api/axios'
 import { toast } from '@/components/ui/Toast'
+import { FormField, Input } from '@/components/ui/Input'
+import Button from '@/components/ui/Button'
 
 const schema = z.object({
   email: z.string().email(),
@@ -68,24 +70,20 @@ export default function Login() {
       <div className="w-full max-w-md card bg-white/90 backdrop-blur-sm">
         <h1 className="page-title">Đăng nhập</h1>
         <form className="space-y-3" onSubmit={handleSubmit(onSubmit)}>
-          <div>
-            <label className="block text-sm mb-1">Email</label>
-            <input className="w-full rounded-md border px-3 py-2 bg-white" placeholder="you@example.com" {...register('email')} />
-            {errors.email && <p className="text-danger text-sm mt-1">{errors.email.message}</p>}
-          </div>
-          <div>
-            <label className="block text-sm mb-1">Mật khẩu</label>
-            <input type="password" className="w-full rounded-md border px-3 py-2 bg-white" {...register('password')} />
-            {errors.password && <p className="text-danger text-sm mt-1">{errors.password.message}</p>}
-          </div>
-          <button className="btn-primary w-full" type="submit">Sign in</button>
+          <FormField id="email" label="Email" error={errors.email?.message as any}>
+            <Input id="email" placeholder="you@example.com" invalid={!!errors.email} describedBy={errors.email ? 'email-error' : undefined} {...register('email')} />
+          </FormField>
+          <FormField id="password" label="Mật khẩu" error={errors.password?.message as any}>
+            <Input id="password" type="password" invalid={!!errors.password} describedBy={errors.password ? 'password-error' : undefined} {...register('password')} />
+          </FormField>
+          <Button className="w-full" type="submit">Đăng nhập</Button>
         </form>
 
         {DEV_MODE && (
           <div className="mt-4 grid grid-cols-1 gap-2">
-            <button className="btn-ghost" onClick={() => signInAs('admin')}>Dev: Sign in as Admin</button>
-            <button className="btn-ghost" onClick={() => signInAs('receptionist')}>Dev: Sign in as Receptionist</button>
-            <button className="btn-ghost" onClick={() => signInAs('doctor')}>Dev: Sign in as Doctor</button>
+            <Button variant="ghost" onClick={() => signInAs('admin')}>Dev: Sign in as Admin</Button>
+            <Button variant="ghost" onClick={() => signInAs('receptionist')}>Dev: Sign in as Receptionist</Button>
+            <Button variant="ghost" onClick={() => signInAs('doctor')}>Dev: Sign in as Doctor</Button>
           </div>
         )}
       </div>

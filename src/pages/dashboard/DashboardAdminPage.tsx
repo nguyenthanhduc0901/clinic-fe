@@ -7,10 +7,13 @@ import { listAuditLogs } from '@/lib/api/audit-logs'
 import { listInvoices, type InvoiceStatus } from '@/lib/api/invoices'
 import { getTodaySummary } from '@/lib/api/appointments'
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid, Legend, PieChart, Pie, Cell, BarChart, Bar } from 'recharts'
+import { useChartTheme } from '@/lib/ui/chartTheme'
+import PanelErrorBoundary from '@/components/app/PanelErrorBoundary'
 
 type RevenuePoint = { day: string; count: number; exam: number; med: number; total: number }
 
 export default function DashboardAdminPage() {
+  const chartTheme = useChartTheme()
   const [sp, setSp] = useSearchParams()
   const today = new Date()
   const defaultFrom = useMemo(() => {
@@ -116,85 +119,94 @@ export default function DashboardAdminPage() {
 
       {/* Row 2: Revenue trend & Invoices breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+        <PanelErrorBoundary title="Doanh thu theo ngày">
         <div className="card lg:col-span-2">
           <SectionTitle>Doanh thu theo ngày</SectionTitle>
           <BlockState isLoading={revenueQuery.isLoading} isError={revenueQuery.isError} onRetry={revenueQuery.refetch}>
             <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={revenue} margin={{ top: 10, right: 20, bottom: 0, left: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="day" tick={{ fontSize: 12 }} />
-                  <YAxis tick={{ fontSize: 12 }} />
-                  <Tooltip />
-                  <Legend />
-                  <Area type="monotone" dataKey="total" stroke="#2c7be5" fill="#2c7be5" name="Tổng" />
-                  <Area type="monotone" dataKey="exam" stroke="#10b981" fill="#10b981" name="Khám" />
-                  <Area type="monotone" dataKey="med" stroke="#f59e0b" fill="#f59e0b" name="Thuốc" />
+                  <CartesianGrid strokeDasharray="3 3" stroke={chartTheme.gridStroke} />
+                  <XAxis dataKey="day" tick={chartTheme.axisTick} />
+                  <YAxis tick={chartTheme.axisTick} />
+                  <Tooltip wrapperStyle={chartTheme.tooltip.wrapperStyle} contentStyle={chartTheme.tooltip.contentStyle} labelStyle={chartTheme.tooltip.labelStyle} />
+                  <Legend wrapperStyle={chartTheme.legend.wrapperStyle} />
+                  <Area type="monotone" dataKey="total" stroke={chartTheme.colors.primary} fill={chartTheme.colors.primary} name="Tổng" />
+                  <Area type="monotone" dataKey="exam" stroke={chartTheme.colors.success} fill={chartTheme.colors.success} name="Khám" />
+                  <Area type="monotone" dataKey="med" stroke={chartTheme.colors.warning} fill={chartTheme.colors.warning} name="Thuốc" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
           </BlockState>
         </div>
+        </PanelErrorBoundary>
+        <PanelErrorBoundary title="Hóa đơn hôm nay">
         <div className="card">
           <SectionTitle>Hóa đơn hôm nay</SectionTitle>
           <BlockState isLoading={invoicesTodayPaid.loading || invoicesTodayPending.loading} isError={false}>
             <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Tooltip />
-                  <Legend />
+                  <Tooltip wrapperStyle={chartTheme.tooltip.wrapperStyle} contentStyle={chartTheme.tooltip.contentStyle} labelStyle={chartTheme.tooltip.labelStyle} />
+                  <Legend wrapperStyle={chartTheme.legend.wrapperStyle} />
                   <Pie dataKey="value" nameKey="name" data={[
                     { name: 'Paid', value: invoicesTodayPaid.count },
                     { name: 'Pending', value: invoicesTodayPending.count },
                   ]} outerRadius={90} label>
-                    <Cell fill="#10b981" />
-                    <Cell fill="#f59e0b" />
+                    <Cell fill={chartTheme.colors.success} />
+                    <Cell fill={chartTheme.colors.warning} />
                   </Pie>
                 </PieChart>
               </ResponsiveContainer>
             </div>
           </BlockState>
         </div>
+        </PanelErrorBoundary>
       </div>
 
       {/* Row 3: Appointments today & Medicine usage */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+        <PanelErrorBoundary title="Lịch hẹn hôm nay theo trạng thái">
         <div className="card">
           <SectionTitle>Lịch hẹn hôm nay theo trạng thái</SectionTitle>
           <BlockState isLoading={apptQuery.isLoading} isError={apptQuery.isError} onRetry={apptQuery.refetch}>
             <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={toAppointmentBarData(apptQuery.data)} margin={{ top: 10, right: 20, bottom: 0, left: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="status" tick={{ fontSize: 12 }} />
-                  <YAxis tick={{ fontSize: 12 }} />
-                  <Tooltip />
-                  <Bar dataKey="count" fill="#2c7be5" />
+                  <CartesianGrid strokeDasharray="3 3" stroke={chartTheme.gridStroke} />
+                  <XAxis dataKey="status" tick={chartTheme.axisTick} />
+                  <YAxis tick={chartTheme.axisTick} />
+                  <Tooltip wrapperStyle={chartTheme.tooltip.wrapperStyle} contentStyle={chartTheme.tooltip.contentStyle} labelStyle={chartTheme.tooltip.labelStyle} />
+                  <Bar dataKey="count" fill={chartTheme.colors.primary} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </BlockState>
         </div>
+        </PanelErrorBoundary>
+        <PanelErrorBoundary title="Top-10 sử dụng thuốc">
         <div className="card lg:col-span-2">
           <SectionTitle>Top-10 sử dụng thuốc</SectionTitle>
           <BlockState isLoading={usageQuery.isLoading} isError={usageQuery.isError} onRetry={usageQuery.refetch}>
             <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={(usageQuery.data ?? []).slice().sort((a,b)=> b.qtyTotal - a.qtyTotal).slice(0,10)} layout="vertical" margin={{ top: 10, right: 20, bottom: 0, left: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" tick={{ fontSize: 12 }} />
-                  <YAxis type="category" dataKey="name" width={150} tick={{ fontSize: 12 }} />
-                  <Tooltip />
-                  <Bar dataKey="qtyTotal" fill="#2c7be5" />
+                  <CartesianGrid strokeDasharray="3 3" stroke={chartTheme.gridStroke} />
+                  <XAxis type="number" tick={chartTheme.axisTick} />
+                  <YAxis type="category" dataKey="name" width={150} tick={chartTheme.axisTick} />
+                  <Tooltip wrapperStyle={chartTheme.tooltip.wrapperStyle} contentStyle={chartTheme.tooltip.contentStyle} labelStyle={chartTheme.tooltip.labelStyle} />
+                  <Bar dataKey="qtyTotal" fill={chartTheme.colors.primary} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </BlockState>
         </div>
+        </PanelErrorBoundary>
       </div>
 
       {/* Row 4: Tables */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+        <PanelErrorBoundary title="Thuốc tồn thấp">
         <div className="card">
           <div className="flex items-center justify-between mb-2">
             <SectionTitle>Thuốc tồn thấp</SectionTitle>
@@ -230,6 +242,8 @@ export default function DashboardAdminPage() {
             </div>
           </BlockState>
         </div>
+        </PanelErrorBoundary>
+        <PanelErrorBoundary title="Hoạt động gần đây">
         <div className="card">
           <SectionTitle>Hoạt động gần đây</SectionTitle>
           <BlockState isLoading={auditQuery.isLoading} isError={auditQuery.isError} onRetry={auditQuery.refetch}>
@@ -259,6 +273,7 @@ export default function DashboardAdminPage() {
             </div>
           </BlockState>
         </div>
+        </PanelErrorBoundary>
       </div>
       <div className="text-xs text-slate-500 dark:text-slate-400 text-right">clinic-fe — {import.meta.env.VITE_APP_VERSION ?? 'dev'} — API {import.meta.env.VITE_API_BASE}</div>
     </div>

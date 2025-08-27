@@ -9,6 +9,8 @@ import { toast } from '@/components/ui/Toast'
 import { useEffect, useState } from 'react'
 import { uploadStaffAvatar, deleteStaffAvatar, getStaffAvatarBlob } from '@/lib/api/staff'
 import { can } from '@/lib/auth/ability'
+import { FormField, Input } from '@/components/ui/Input'
+import Button from '@/components/ui/Button'
 
 const schema = z.object({
   email: z.string().email('Email không hợp lệ'),
@@ -138,7 +140,7 @@ export default function ProfilePage() {
                       Upload ảnh
                     </label>
                     {Boolean(q.data.staff.avatarUrl) && avatarUrl && (
-                      <button type="button" className="btn-ghost text-danger" onClick={onDeleteAvatar} disabled={uploading}>Xoá ảnh</button>
+                      <Button type="button" variant="danger" onClick={onDeleteAvatar} disabled={uploading}>Xoá ảnh</Button>
                     )}
                     {uploading && (
                       <div className="w-28">
@@ -155,52 +157,43 @@ export default function ProfilePage() {
             </div>
           )}
           <div className="grid grid-cols-2 gap-2">
-            <div>
-              <label className="block text-sm mb-1">Email</label>
-              <input className="w-full rounded-md border px-3 py-2" defaultValue={q.data?.email ?? ''} {...register('email')} />
-              {errors.email && <p className="text-danger text-sm mt-1">{String(errors.email.message)}</p>}
-            </div>
-            <div>
-              <label className="block text-sm mb-1">Phone</label>
-              <input className="w-full rounded-md border px-3 py-2" defaultValue={q.data?.phone ?? ''} {...register('phone')} />
-            </div>
+            <FormField id="email" label="Email" error={errors.email?.message as any}>
+              <Input id="email" defaultValue={q.data?.email ?? ''} {...register('email')} invalid={!!errors.email} describedBy={errors.email ? 'email-error' : undefined} />
+            </FormField>
+            <FormField id="phone" label="Phone">
+              <Input id="phone" defaultValue={q.data?.phone ?? ''} {...register('phone')} />
+            </FormField>
           </div>
           {q.data?.staff && (
             <>
               <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-sm mb-1">Full name</label>
-                  <input className="w-full rounded-md border px-3 py-2" defaultValue={q.data.staff.fullName ?? ''} {...register('fullName')} />
-                </div>
-                <div>
-                  <label className="block text-sm mb-1">Gender</label>
-                  <select className="w-full rounded-md border px-3 py-2" defaultValue={(q.data.staff.gender as any) ?? ''} {...register('gender')}>
+                <FormField id="fullName" label="Full name">
+                  <Input id="fullName" defaultValue={q.data.staff.fullName ?? ''} {...register('fullName')} />
+                </FormField>
+                <FormField id="gender" label="Gender">
+                  <select id="gender" className="w-full rounded-md border px-3 py-2" defaultValue={(q.data.staff.gender as any) ?? ''} {...register('gender')}>
                     <option value="">--</option>
                     <option value="Nam">Nam</option>
                     <option value="Nữ">Nữ</option>
                     <option value="Khác">Khác</option>
                   </select>
-                </div>
+                </FormField>
               </div>
               <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="block text-sm mb-1">Birth date</label>
-                  <input className="w-full rounded-md border px-3 py-2" type="date" defaultValue={q.data.staff.birthDate ? q.data.staff.birthDate.slice(0,10) : ''} {...register('birthDate')} />
-                </div>
-                <div>
-                  <label className="block text-sm mb-1">Avatar URL</label>
-                  <input className="w-full rounded-md border px-3 py-2" defaultValue={q.data.staff.avatarUrl ?? ''} {...register('avatarUrl')} />
-                  {errors.avatarUrl && <p className="text-danger text-sm mt-1">{String(errors.avatarUrl.message)}</p>}
-                </div>
+                <FormField id="birthDate" label="Birth date">
+                  <Input id="birthDate" type="date" defaultValue={q.data.staff.birthDate ? q.data.staff.birthDate.slice(0,10) : ''} {...register('birthDate')} />
+                </FormField>
+                <FormField id="avatarUrl" label="Avatar URL" error={errors.avatarUrl?.message as any}>
+                  <Input id="avatarUrl" defaultValue={q.data.staff.avatarUrl ?? ''} {...register('avatarUrl')} invalid={!!errors.avatarUrl} describedBy={errors.avatarUrl ? 'avatarUrl-error' : undefined} />
+                </FormField>
               </div>
-              <div>
-                <label className="block text-sm mb-1">Address</label>
-                <input className="w-full rounded-md border px-3 py-2" defaultValue={q.data.staff.address ?? ''} {...register('address')} />
-              </div>
+              <FormField id="address" label="Address">
+                <Input id="address" defaultValue={q.data.staff.address ?? ''} {...register('address')} />
+              </FormField>
             </>
           )}
           <div className="text-right">
-            <button className="btn-primary" disabled={isSubmitting || mut.isPending}>{mut.isPending ? 'Đang lưu...' : 'Lưu thay đổi'}</button>
+            <Button disabled={isSubmitting || mut.isPending}>{mut.isPending ? 'Đang lưu...' : 'Lưu thay đổi'}</Button>
           </div>
         </form>
       </div>

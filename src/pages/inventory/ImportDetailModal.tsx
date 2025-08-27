@@ -1,6 +1,6 @@
 import Modal from '@/components/ui/Modal'
 import { useQuery } from '@tanstack/react-query'
-import { getImport } from '@/lib/api/inventory'
+import { getImport } from '../../lib/api/inventory'
 
 export default function ImportDetailModal({ id, onClose }: { id: number | null; onClose: () => void }) {
 	const { data, isLoading, isError } = useQuery({ queryKey: ['import', id], enabled: id != null, queryFn: () => getImport(id!) })

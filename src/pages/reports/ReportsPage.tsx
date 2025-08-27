@@ -4,6 +4,8 @@ import { useQuery } from '@tanstack/react-query'
 import { getRevenue, exportRevenueCsv, getMedicineUsage, mapRevenueRow, mapMedicineUsageRow } from '@/lib/api/reports'
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, BarChart, Bar, Legend, AreaChart, Area, PieChart, Pie, Cell } from 'recharts'
 import { toast } from '@/components/ui/Toast'
+import { useChartTheme, PIE_COLORS as THEME_PIE_COLORS } from '@/lib/ui/chartTheme'
+import PanelErrorBoundary from '@/components/app/PanelErrorBoundary'
 
 export default function ReportsPage() {
 	const [tab, setTab] = useState<'revenue' | 'usage'>('revenue')
@@ -16,7 +18,15 @@ export default function ReportsPage() {
 					<button className={`btn-ghost ${tab==='usage' ? 'underline' : ''}`} onClick={()=> setTab('usage')}>Medicine Usage</button>
 				</div>
 			</div>
-			{tab === 'revenue' ? <RevenueTab /> : <MedicineUsageTab />}
+			{tab === 'revenue' ? (
+				<PanelErrorBoundary title="Báo cáo Doanh thu">
+					<RevenueTab />
+				</PanelErrorBoundary>
+			) : (
+				<PanelErrorBoundary title="Báo cáo Sử dụng thuốc">
+					<MedicineUsageTab />
+				</PanelErrorBoundary>
+			)}
 		</div>
 	)
 }
@@ -24,6 +34,7 @@ export default function ReportsPage() {
 type RevenueRow = { day: string; count: number; exam: number; med: number; total: number }
 
 function RevenueTab() {
+	const chartTheme = useChartTheme()
 	const [sp, setSp] = useSearchParams()
 	const from = sp.get('from') || ''
 	const to = sp.get('to') || ''
@@ -51,12 +62,9 @@ function RevenueTab() {
 	async function downloadCsv() {
 		try {
 			const blob = await exportRevenueCsv(params)
-			const url = URL.createObjectURL(blob)
-			const a = document.createElement('a')
-			a.href = url
-			a.download = `revenue_${from || 'all'}_${to || 'all'}.csv`
-			a.click()
-			URL.revokeObjectURL(url)
+			const name = `revenue_${from || 'all'}_${to || 'all'}.csv`
+			// centralized helper
+			;(await import('@/lib/utils/download')).downloadBlob(blob, name)
 		} catch (e: any) {
 			toast.error(e?.message || 'Tải CSV thất bại')
 		}
@@ -89,36 +97,36 @@ function RevenueTab() {
 						<ResponsiveContainer width="100%" height="100%">
 							{chart==='line' ? (
 								<LineChart data={grouped} margin={{ top: 10, right: 20, bottom: 0, left: 0 }}>
-									<CartesianGrid strokeDasharray="3 3" />
-									<XAxis dataKey="label" tick={{ fontSize: 12 }} tickFormatter={(v)=> formatDateLabel(String(v))} />
-									<YAxis tick={{ fontSize: 12 }} />
-									<Tooltip />
-									<Legend />
-									<Line type="monotone" dataKey="total" stroke="#2c7be5" name="Tổng doanh thu" strokeWidth={2} dot={false} />
-									<Line type="monotone" dataKey="exam" stroke="#10b981" name="Tiền khám" strokeWidth={2} dot={false} />
-									<Line type="monotone" dataKey="med" stroke="#f59e0b" name="Tiền thuốc" strokeWidth={2} dot={false} />
+									<CartesianGrid strokeDasharray="3 3" stroke={chartTheme.gridStroke} />
+									<XAxis dataKey="label" tick={chartTheme.axisTick} tickFormatter={(v)=> formatDateLabel(String(v))} />
+									<YAxis tick={chartTheme.axisTick} />
+									<Tooltip wrapperStyle={chartTheme.tooltip.wrapperStyle} contentStyle={chartTheme.tooltip.contentStyle} labelStyle={chartTheme.tooltip.labelStyle} />
+									<Legend wrapperStyle={chartTheme.legend.wrapperStyle} />
+									<Line type="monotone" dataKey="total" stroke={chartTheme.colors.primary} name="Tổng doanh thu" strokeWidth={2} dot={false} />
+									<Line type="monotone" dataKey="exam" stroke={chartTheme.colors.success} name="Tiền khám" strokeWidth={2} dot={false} />
+									<Line type="monotone" dataKey="med" stroke={chartTheme.colors.warning} name="Tiền thuốc" strokeWidth={2} dot={false} />
 								</LineChart>
 							) : chart==='bar' ? (
 								<BarChart data={grouped} margin={{ top: 10, right: 20, bottom: 0, left: 0 }}>
-									<CartesianGrid strokeDasharray="3 3" />
-									<XAxis dataKey="label" tick={{ fontSize: 12 }} tickFormatter={(v)=> formatDateLabel(String(v))} />
-									<YAxis tick={{ fontSize: 12 }} />
-									<Tooltip />
-									<Legend />
-									<Bar dataKey="total" fill="#2c7be5" name="Tổng" />
-									<Bar dataKey="exam" fill="#10b981" name="Tiền khám" />
-									<Bar dataKey="med" fill="#f59e0b" name="Tiền thuốc" />
+									<CartesianGrid strokeDasharray="3 3" stroke={chartTheme.gridStroke} />
+									<XAxis dataKey="label" tick={chartTheme.axisTick} tickFormatter={(v)=> formatDateLabel(String(v))} />
+									<YAxis tick={chartTheme.axisTick} />
+									<Tooltip wrapperStyle={chartTheme.tooltip.wrapperStyle} contentStyle={chartTheme.tooltip.contentStyle} labelStyle={chartTheme.tooltip.labelStyle} />
+									<Legend wrapperStyle={chartTheme.legend.wrapperStyle} />
+									<Bar dataKey="total" fill={chartTheme.colors.primary} name="Tổng" />
+									<Bar dataKey="exam" fill={chartTheme.colors.success} name="Tiền khám" />
+									<Bar dataKey="med" fill={chartTheme.colors.warning} name="Tiền thuốc" />
 								</BarChart>
 							) : (
 								<AreaChart data={grouped} margin={{ top: 10, right: 20, bottom: 0, left: 0 }}>
-									<CartesianGrid strokeDasharray="3 3" />
-									<XAxis dataKey="label" tick={{ fontSize: 12 }} tickFormatter={(v)=> formatDateLabel(String(v))} />
-									<YAxis tick={{ fontSize: 12 }} />
-									<Tooltip />
-									<Legend />
-									<Area type="monotone" dataKey="total" stroke="#2c7be5" fill="#2c7be5" name="Tổng doanh thu" />
-									<Area type="monotone" dataKey="exam" stroke="#10b981" fill="#10b981" name="Tiền khám" />
-									<Area type="monotone" dataKey="med" stroke="#f59e0b" fill="#f59e0b" name="Tiền thuốc" />
+									<CartesianGrid strokeDasharray="3 3" stroke={chartTheme.gridStroke} />
+									<XAxis dataKey="label" tick={chartTheme.axisTick} tickFormatter={(v)=> formatDateLabel(String(v))} />
+									<YAxis tick={chartTheme.axisTick} />
+									<Tooltip wrapperStyle={chartTheme.tooltip.wrapperStyle} contentStyle={chartTheme.tooltip.contentStyle} labelStyle={chartTheme.tooltip.labelStyle} />
+									<Legend wrapperStyle={chartTheme.legend.wrapperStyle} />
+									<Area type="monotone" dataKey="total" stroke={chartTheme.colors.primary} fill={chartTheme.colors.primary} name="Tổng doanh thu" />
+									<Area type="monotone" dataKey="exam" stroke={chartTheme.colors.success} fill={chartTheme.colors.success} name="Tiền khám" />
+									<Area type="monotone" dataKey="med" stroke={chartTheme.colors.warning} fill={chartTheme.colors.warning} name="Tiền thuốc" />
 								</AreaChart>
 							)}
 						</ResponsiveContainer>
@@ -159,6 +167,7 @@ function RevenueTab() {
 }
 
 function MedicineUsageTab() {
+	const chartTheme = useChartTheme()
 	const [sp, setSp] = useSearchParams()
 	const from = sp.get('from') || ''
 	const to = sp.get('to') || ''
@@ -198,21 +207,21 @@ function MedicineUsageTab() {
 						<ResponsiveContainer width="100%" height="100%">
 							{chart==='bar' ? (
 								<BarChart data={(data ?? []).slice(0, topN)} margin={{ top: 10, right: 20, bottom: 0, left: 0 }}>
-									<CartesianGrid strokeDasharray="3 3" />
-									<XAxis dataKey="name" tick={{ fontSize: 12 }} />
-									<YAxis tick={{ fontSize: 12 }} />
-									<Tooltip />
-									<Legend />
-									<Bar dataKey="qtyTotal" fill="#2c7be5" name="Tổng SL" />
-									<Bar dataKey="times" fill="#10b981" name="Số lần" />
+									<CartesianGrid strokeDasharray="3 3" stroke={chartTheme.gridStroke} />
+									<XAxis dataKey="name" tick={chartTheme.axisTick} />
+									<YAxis tick={chartTheme.axisTick} />
+									<Tooltip wrapperStyle={chartTheme.tooltip.wrapperStyle} contentStyle={chartTheme.tooltip.contentStyle} labelStyle={chartTheme.tooltip.labelStyle} />
+									<Legend wrapperStyle={chartTheme.legend.wrapperStyle} />
+									<Bar dataKey="qtyTotal" fill={chartTheme.colors.primary} name="Tổng SL" />
+									<Bar dataKey="times" fill={chartTheme.colors.success} name="Số lần" />
 								</BarChart>
 							) : (
 								<PieChart>
-									<Tooltip />
-									<Legend />
+									<Tooltip wrapperStyle={chartTheme.tooltip.wrapperStyle} contentStyle={chartTheme.tooltip.contentStyle} labelStyle={chartTheme.tooltip.labelStyle} />
+									<Legend wrapperStyle={chartTheme.legend.wrapperStyle} />
 									<Pie dataKey="qtyTotal" nameKey="name" data={(data ?? []).slice(0, topN)} outerRadius={90} label>
 										{(data ?? []).slice(0, topN).map((_, i) => (
-											<Cell key={`c-${i}`} fill={PIE_COLORS[i % PIE_COLORS.length]} />
+											<Cell key={`c-${i}`} fill={THEME_PIE_COLORS[i % THEME_PIE_COLORS.length]} />
 										))}
 									</Pie>
 								</PieChart>
@@ -299,7 +308,7 @@ function formatDateLabel(label: string) {
 	return `${day}/${month}`
 }
 
-const PIE_COLORS = ['#1f77b4','#ff7f0e','#2ca02c','#d62728','#9467bd','#8c564b','#e377c2','#7f7f7f','#bcbd22','#17becf']
+// Deprecated local palette; using THEME_PIE_COLORS from chartTheme
 
 
 

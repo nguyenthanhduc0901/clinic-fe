@@ -13,6 +13,9 @@ import { toast } from '@/components/ui/Toast'
 import PatientEditModal from '@/pages/patients/PatientEditModal'
 import { useAuthStore } from '@/lib/auth/authStore'
 import { can } from '@/lib/auth/ability'
+import { FormField, Input, Select } from '@/components/ui/Input'
+import Button from '@/components/ui/Button'
+import ConfirmModal from '@/components/ui/ConfirmModal'
 
 export default function PatientsPage() {
   const [sp, setSp] = useSearchParams()
@@ -72,14 +75,18 @@ export default function PatientsPage() {
         )}
       </div>
       <div className="card">
-        <div className="flex flex-wrap items-center gap-2">
-          <input className="rounded-md border px-3 py-2" placeholder="Tìm tên/SĐT" value={q} onChange={(e) => applySearch(e.target.value)} />
-          <button className="btn-ghost" onClick={() => applySearch('')}>Clear</button>
-          <div className="ml-auto flex items-center gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+          <FormField id="q" label="Tìm tên/SĐT">
+            <Input id="q" placeholder="Nhập tên hoặc SĐT" value={q} onChange={(e)=> applySearch(e.target.value)} />
+          </FormField>
+          <div className="flex items-end gap-2">
+            <Button variant="ghost" onClick={()=> applySearch('')}>Xoá</Button>
+          </div>
+          <div className="ml-auto flex items-end gap-2">
             <span className="text-sm">Hiển thị</span>
-            <select className="rounded-md border px-2 py-1" value={limitParam} onChange={(e) => changeLimit(Number(e.target.value))}>
-              {[10, 20, 50].map((n) => <option key={n} value={n}>{n}</option>)}
-            </select>
+            <Select aria-label="Số dòng mỗi trang" value={String(limitParam)} onChange={(e)=> changeLimit(Number(e.target.value))}>
+              {[10,20,50].map((n)=> <option key={n} value={n}>{n}</option>)}
+            </Select>
           </div>
         </div>
       </div>
@@ -90,8 +97,8 @@ export default function PatientsPage() {
         {!isLoading && !isError && rows.length > 0 && (
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">
-              <thead>
-                <tr className="text-left text-slate-600">
+              <thead className="sticky top-0 bg-white dark:bg-neutral-900 z-[1]">
+                <tr className="text-left text-neutral-600 dark:text-neutral-300">
                   <th className="px-3 py-2">Họ tên</th>
                   <th className="px-3 py-2">Giới tính</th>
                   <th className="px-3 py-2">Năm sinh</th>
@@ -102,7 +109,7 @@ export default function PatientsPage() {
               </thead>
               <tbody>
                 {rows.map((p: Patient) => (
-                  <tr key={p.id} className="border-t">
+                  <tr key={p.id} className="border-t odd:bg-neutral-50 dark:odd:bg-neutral-900/40 hover:bg-neutral-100 dark:hover:bg-neutral-800">
                     <td className="px-3 py-2">{p.fullName}</td>
                     <td className="px-3 py-2">
                       <span className={`inline-flex rounded-full px-2 py-0.5 text-xs ${genderColor(p.gender)}`}>{p.gender}</span>
@@ -112,7 +119,7 @@ export default function PatientsPage() {
                     <td className="px-3 py-2 max-w-[280px] truncate" title={p.address ?? ''}>{p.address ?? '-'}</td>
                     {(canEdit || canDelete) && (
                       <td className="px-3 py-2 flex gap-2">
-                        {canEdit && <button className="btn-ghost" onClick={() => setEdit({ id: p.id })}>Cập nhật</button>}
+                        {canEdit && <Button variant="ghost" size="sm" onClick={() => setEdit({ id: p.id })}>Cập nhật</Button>}
                         {canDelete && <PatientDeleteButton id={p.id} />}
                         <PatientHistoryButton id={p.id} />
                       </td>
@@ -151,14 +158,22 @@ function genderColor(gender?: string) {
 function PatientDeleteButton({ id }: { id: number }) {
   const qc = useQueryClient()
   const mut = useMutation({ mutationFn: () => deletePatient(id), onSuccess: () => { toast.success('Đã xoá bệnh nhân'); qc.invalidateQueries({ queryKey: ['patients'] }) }, onError: (e:any)=> toast.error(e?.response?.data?.message || 'Xoá thất bại') })
-  return <button className="btn-ghost text-danger" onClick={()=> { if (confirm('Xoá bệnh nhân này?')) mut.mutate() }} disabled={mut.isPending}>Xoá</button>
+  const [open, setOpen] = useState(false)
+  return (
+    <>
+      <Button variant="danger" size="sm" onClick={()=> setOpen(true)} disabled={mut.isPending}>Xoá</Button>
+      <ConfirmModal open={open} title={`Xoá bệnh nhân #${id}?`} onClose={()=> setOpen(false)} onConfirm={()=> mut.mutate()} loading={mut.isPending} confirmText="Xoá">
+        <div className="text-sm">Thao tác này không thể hoàn tác.</div>
+      </ConfirmModal>
+    </>
+  )
 }
 
 function PatientHistoryButton({ id }: { id: number }) {
   const [open, setOpen] = useState(false)
   return (
     <>
-      <button className="btn-ghost" onClick={()=> setOpen(true)}>Lịch sử khám</button>
+      <Button variant="ghost" size="sm" onClick={()=> setOpen(true)}>Lịch sử khám</Button>
       {open && <PatientHistoryModal id={id} onClose={()=> setOpen(false)} />}
     </>
   )

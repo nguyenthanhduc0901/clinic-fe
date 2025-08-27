@@ -10,8 +10,11 @@ import CreateMedicalRecordModal from '@/pages/medical-records/components/CreateM
 import Modal from '@/components/ui/Modal'
 import { toast } from '@/components/ui/Toast'
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts'
+import PanelErrorBoundary from '@/components/app/PanelErrorBoundary'
+import { useChartTheme } from '@/lib/ui/chartTheme'
 
 export default function DashboardDoctorPage() {
+  const chartTheme = useChartTheme()
   const { permissions, user } = useAuthStore()
   const perms = (permissions.length ? permissions : (user?.role?.permissions?.map((p: any) => p.name) ?? [])) as string[]
   const hasReportView = perms.includes('report:view')
@@ -172,6 +175,7 @@ export default function DashboardDoctorPage() {
 
       {/* Re-exam & Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+        <PanelErrorBoundary title="Tái khám (7 ngày tới)">
         <div className="card">
           <h2 className="text-sm font-medium mb-2">Tái khám (7 ngày tới)</h2>
           <div className="overflow-x-auto">
@@ -195,20 +199,23 @@ export default function DashboardDoctorPage() {
             </table>
           </div>
         </div>
+        </PanelErrorBoundary>
+        <PanelErrorBoundary title="Bệnh án 14 ngày">
         <div className="card lg:col-span-2">
           <h2 className="text-sm font-medium mb-2">Bệnh án 14 ngày</h2>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={trend.data ?? []} margin={{ top: 10, right: 20, bottom: 0, left: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="day" tick={{ fontSize: 12 }} />
-                <YAxis />
-                <Tooltip />
-                <Area type="monotone" dataKey="count" stroke="#2c7be5" fill="#2c7be5" />
+                <CartesianGrid strokeDasharray="3 3" stroke={chartTheme.gridStroke} />
+                <XAxis dataKey="day" tick={chartTheme.axisTick} />
+                <YAxis tick={chartTheme.axisTick} />
+                <Tooltip wrapperStyle={chartTheme.tooltip.wrapperStyle} contentStyle={chartTheme.tooltip.contentStyle} labelStyle={chartTheme.tooltip.labelStyle} />
+                <Area type="monotone" dataKey="count" stroke={chartTheme.colors.primary} fill={chartTheme.colors.primary} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
+        </PanelErrorBoundary>
       </div>
 
       {/* Modals/Drawers */}
