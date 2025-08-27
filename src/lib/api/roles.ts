@@ -33,3 +33,4 @@ export async function setRolePermissions(id: number, permissionIds: number[]) {
 	return res.data as Role
 }
 
+

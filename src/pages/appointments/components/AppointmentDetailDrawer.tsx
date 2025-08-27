@@ -30,3 +30,4 @@ export default function AppointmentDetailDrawer({ id, onClose }: { id: number | 
 }
 
 
+

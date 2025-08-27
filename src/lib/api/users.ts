@@ -55,3 +55,4 @@ export async function deleteUser(id: number) {
 	return res.data as { success: boolean }
 }
 
+

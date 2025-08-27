@@ -16,3 +16,4 @@ export async function listAuditLogs(params: { table?: string; recordId?: number;
 	return res.data as { data: AuditLog[]; page: number; limit: number }
 }
 
+

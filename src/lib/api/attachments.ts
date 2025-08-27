@@ -47,3 +47,4 @@ export async function deleteAttachment(recordId: number, attachmentId: number): 
 }
 
 
+

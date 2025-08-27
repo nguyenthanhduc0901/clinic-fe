@@ -19,3 +19,4 @@ export async function updateSetting(key: string, value: string) {
 	return res.data as Setting
 }
 
+
