@@ -7,6 +7,8 @@ import { getCatalogs } from '@/lib/api/catalogs'
 import { listMedicines } from '@/lib/api/medicines'
 import { useState } from 'react'
 import { toast } from '@/components/ui/Toast'
+import { FormField, Input } from '@/components/ui/Input'
+import Button from '@/components/ui/Button'
 
 type Props = { open: boolean; onClose: () => void; appointmentId: number | null }
 
@@ -60,32 +62,27 @@ export default function CreateMedicalRecordModal({ open, onClose, appointmentId 
 	return (
 		<Modal open onClose={onClose} title={`Tạo bệnh án từ lịch hẹn #${appointmentId}`}>
 			<form className="space-y-3" onSubmit={handleSubmit((v)=> mut.mutate(v))}>
-				<div>
-					<label className="block text-sm mb-1">Chẩn đoán</label>
-					<input className="w-full rounded-md border px-3 py-2" {...register('diagnosis', { required: true })} />
-				</div>
+				<FormField id="diagnosis" label="Chẩn đoán">
+					<Input id="diagnosis" {...register('diagnosis', { required: true })} />
+				</FormField>
 				<div className="grid grid-cols-2 gap-2">
-					<div>
-						<label className="block text-sm mb-1">Triệu chứng</label>
-						<input className="w-full rounded-md border px-3 py-2" {...register('symptoms')} />
-					</div>
-					<div>
-						<label className="block text-sm mb-1">Nhóm bệnh</label>
-						<select className="w-full rounded-md border px-3 py-2" {...register('diseaseTypeId', { valueAsNumber: true })}> 
+					<FormField id="symptoms" label="Triệu chứng">
+						<Input id="symptoms" {...register('symptoms')} />
+					</FormField>
+					<FormField id="diseaseTypeId" label="Nhóm bệnh">
+						<select id="diseaseTypeId" className="w-full rounded-md border px-3 py-2" {...register('diseaseTypeId', { valueAsNumber: true })}>
 							<option value="">--</option>
 							{(catalogs.data?.diseaseTypes ?? []).map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
 						</select>
-					</div>
+					</FormField>
 				</div>
 				<div className="grid grid-cols-2 gap-2">
-					<div>
-						<label className="block text-sm mb-1">Ngày tái khám</label>
-						<input className="w-full rounded-md border px-3 py-2" type="date" {...register('reExaminationDate')} />
-					</div>
-					<div>
-						<label className="block text-sm mb-1">Ghi chú</label>
-						<input className="w-full rounded-md border px-3 py-2" {...register('notes')} />
-					</div>
+					<FormField id="reExaminationDate" label="Ngày tái khám">
+						<Input id="reExaminationDate" type="date" {...register('reExaminationDate')} />
+					</FormField>
+					<FormField id="notes" label="Ghi chú">
+						<Input id="notes" {...register('notes')} />
+					</FormField>
 				</div>
 
 				<div>
@@ -94,14 +91,14 @@ export default function CreateMedicalRecordModal({ open, onClose, appointmentId 
 						{fields.map((f, idx) => (
 							<div key={f.id} className="grid grid-cols-4 gap-2">
 								<div>
-									<input className="w-full rounded-md border px-3 py-2" placeholder="Tìm thuốc..." onChange={(e)=> setQ(e.target.value)} />
+									<Input placeholder="Tìm thuốc..." onChange={(e)=> setQ(e.target.value)} />
 									<select className="w-full rounded-md border px-3 py-2 mt-1" {...register(`prescriptions.${idx}.medicineId` as const, { valueAsNumber: true })}>
 										<option value="">-- chọn thuốc --</option>
 										{(meds.data?.data ?? []).map((m) => <option key={m.id} value={m.id}>{m.name}</option>)}
 									</select>
 								</div>
 								<div>
-									<input className="w-full rounded-md border px-3 py-2" type="number" placeholder="Số lượng" {...register(`prescriptions.${idx}.quantity` as const, { valueAsNumber: true })} />
+									<Input type="number" placeholder="Số lượng" {...register(`prescriptions.${idx}.quantity` as const, { valueAsNumber: true })} />
 								</div>
 								<div>
 									<select className="w-full rounded-md border px-3 py-2" {...register(`prescriptions.${idx}.usageInstructionId` as const, { valueAsNumber: true })}>
@@ -110,18 +107,18 @@ export default function CreateMedicalRecordModal({ open, onClose, appointmentId 
 									</select>
 								</div>
 								<div className="flex gap-2">
-									<input className="w-full rounded-md border px-3 py-2" placeholder="Ghi chú" {...register(`prescriptions.${idx}.notes` as const)} />
-									<button type="button" className="btn-ghost" onClick={()=> remove(idx)}>Xóa</button>
+									<Input placeholder="Ghi chú" {...register(`prescriptions.${idx}.notes` as const)} />
+									<Button type="button" variant="ghost" onClick={()=> remove(idx)}>Xóa</Button>
 								</div>
 							</div>
 						))}
-						<button type="button" className="btn-ghost" onClick={()=> append({})}>+ Thêm dòng</button>
+						<Button type="button" variant="ghost" onClick={()=> append({})}>+ Thêm dòng</Button>
 					</div>
 				</div>
 
 				<div className="text-right">
-					<button type="button" className="btn-ghost" onClick={onClose}>Hủy</button>
-					<button className="btn-primary" disabled={mut.isPending}>{mut.isPending ? 'Đang lưu...' : 'Tạo hồ sơ'}</button>
+					<Button type="button" variant="ghost" onClick={onClose}>Hủy</Button>
+					<Button disabled={mut.isPending}>{mut.isPending ? 'Đang lưu...' : 'Tạo hồ sơ'}</Button>
 				</div>
 			</form>
 		</Modal>

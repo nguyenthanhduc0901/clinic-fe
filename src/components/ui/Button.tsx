@@ -24,6 +24,7 @@ export default function Button({ className, variant = 'primary', size = 'md', lo
     <button
       className={twMerge('inline-flex items-center justify-center font-medium shadow-sm focus-visible:outline-none focus-visible:ring-2 disabled:opacity-60 disabled:cursor-not-allowed', base, sizing, className)}
       disabled={disabled || loading}
+      aria-busy={loading || undefined}
       {...props}
     >
       {leftIcon && <span className={twMerge('mr-2 inline-flex', size === 'sm' ? 'h-3 w-3' : size === 'lg' ? 'h-5 w-5' : 'h-4 w-4')}>{leftIcon}</span>}
