@@ -62,8 +62,12 @@ export default function CreateMedicalRecordModal({ open, onClose, appointmentId 
 	if (!open || !appointmentId) return null
 
 	return (
-		<Modal open onClose={onClose} title={`Tạo bệnh án từ lịch hẹn #${appointmentId}`}>
+		<Modal open onClose={onClose} title={`Tạo bệnh án từ lịch hẹn #${appointmentId}`} size="4xl">
 			<form className="space-y-3" onSubmit={handleSubmit((v)=> mut.mutate(v))}>
+				<div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+					<div className="md:col-span-2 space-y-3">
+						<div className="rounded-md border p-3 bg-white dark:bg-neutral-900">
+							<h3 className="font-medium mb-2">Thông tin chính</h3>
 				<FormField id="diagnosis" label="Chẩn đoán">
 					<Input id="diagnosis" {...register('diagnosis', { required: true })} />
 				</FormField>
@@ -85,26 +89,13 @@ export default function CreateMedicalRecordModal({ open, onClose, appointmentId 
 					<FormField id="notes" label="Ghi chú">
 						<Input id="notes" {...register('notes')} />
 					</FormField>
+					</div>
 				</div>
 
-				<DermAIAnalyzer onInsertNote={(txt)=> {
-					const cur = getValues('notes') || ''
-					setValue('notes', (cur ? cur + ' ' : '') + txt, { shouldDirty: true })
-				}} />
+				{/* AI panels moved to right column */}
 
-				<TextAIAnalyzer
-					initialTranscript={''}
-					onInsertSymptoms={(csv)=> {
-						const cur = getValues('symptoms') || ''
-						setValue('symptoms', (cur ? cur + ', ' : '') + csv, { shouldDirty: true })
-					}}
-					onInsertDiagnosis={(d)=> {
-						setValue('diagnosis', d || '', { shouldDirty: true })
-					}}
-				/>
-
-				<div>
-					<h3 className="font-medium mb-1">Prescriptions</h3>
+				<div className="rounded-md border p-3 bg-white dark:bg-neutral-900">
+					<h3 className="font-medium mb-2">Đơn thuốc</h3>
 					<div className="space-y-2">
 						{fields.map((f, idx) => (
 							<div key={f.id} className="grid grid-cols-4 gap-2">
@@ -133,6 +124,33 @@ export default function CreateMedicalRecordModal({ open, onClose, appointmentId 
 						<Button type="button" variant="ghost" onClick={()=> append({})}>+ Thêm dòng</Button>
 					</div>
 				</div>
+				</div>
+				<div className="md:col-span-1 space-y-3">
+					<div className="rounded-md border p-3 bg-white dark:bg-neutral-900">
+						<h3 className="font-medium mb-2">Hỗ trợ AI</h3>
+						<details className="mb-2">
+							<summary className="cursor-pointer select-none py-1 text-sm text-neutral-700 dark:text-neutral-200">Phân tích da liễu (Ảnh)</summary>
+							<DermAIAnalyzer onInsertNote={(txt)=> {
+								const cur = getValues('notes') || ''
+								setValue('notes', (cur ? cur + ' ' : '') + txt, { shouldDirty: true })
+							}} />
+						</details>
+						<details>
+							<summary className="cursor-pointer select-none py-1 text-sm text-neutral-700 dark:text-neutral-200">Phân tích hội thoại (Text)</summary>
+							<TextAIAnalyzer
+								initialTranscript={''}
+								onInsertSymptoms={(csv)=> {
+									const cur = getValues('symptoms') || ''
+									setValue('symptoms', (cur ? cur + ', ' : '') + csv, { shouldDirty: true })
+								}}
+								onInsertDiagnosis={(d)=> {
+									setValue('diagnosis', d || '', { shouldDirty: true })
+								}}
+							/>
+						</details>
+					</div>
+				</div>
+			</div>
 
 				<div className="text-right">
 					<Button type="button" variant="ghost" onClick={onClose}>Hủy</Button>
