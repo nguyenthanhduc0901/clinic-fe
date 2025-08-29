@@ -4,6 +4,7 @@ import { useMutation } from '@tanstack/react-query'
 import { updateMedicalRecord } from '@/lib/api/medical-records'
 import { toast } from '@/components/ui/Toast'
 import DermAIAnalyzer from '@/components/ai/DermAIAnalyzer'
+import TextAIAnalyzer from '@/components/ai/TextAIAnalyzer'
 
 type Values = { symptoms?: string; diagnosis?: string; diseaseTypeId?: number; reExaminationDate?: string; notes?: string; status?: 'pending' | 'completed' | 'cancelled' }
 
@@ -68,6 +69,17 @@ export default function MRUpdateModal({ id, initial, open, onClose, onUpdated }:
 					const el = document.getElementById('notes') as HTMLInputElement | null
 					if (el) el.value = (el.value ? el.value + ' ' : '') + txt
 				}} />
+				<TextAIAnalyzer
+					initialTranscript={''}
+					onInsertSymptoms={(csv)=> {
+						const cur = (document.querySelector('input[name="symptoms"]') as HTMLInputElement | null)?.value || ''
+						const next = (cur ? cur + ', ' : '') + csv
+						try { (document.querySelector('input[name="symptoms"]') as HTMLInputElement | null)!.value = next } catch {}
+					}}
+					onInsertDiagnosis={(d)=> {
+						try { (document.querySelector('input[name="diagnosis"]') as HTMLInputElement | null)!.value = d || '' } catch {}
+					}}
+				/>
 				<div className="text-right">
 					<button type="button" className="btn-ghost" onClick={onClose}>Huỷ</button>
 					<button className="btn-primary" disabled={mut.isPending}>Lưu</button>

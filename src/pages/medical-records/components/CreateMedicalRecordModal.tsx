@@ -10,6 +10,7 @@ import { toast } from '@/components/ui/Toast'
 import { FormField, Input } from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
 import DermAIAnalyzer from '@/components/ai/DermAIAnalyzer'
+import TextAIAnalyzer from '@/components/ai/TextAIAnalyzer'
 
 type Props = { open: boolean; onClose: () => void; appointmentId: number | null }
 
@@ -90,6 +91,17 @@ export default function CreateMedicalRecordModal({ open, onClose, appointmentId 
 					const cur = getValues('notes') || ''
 					setValue('notes', (cur ? cur + ' ' : '') + txt, { shouldDirty: true })
 				}} />
+
+				<TextAIAnalyzer
+					initialTranscript={''}
+					onInsertSymptoms={(csv)=> {
+						const cur = getValues('symptoms') || ''
+						setValue('symptoms', (cur ? cur + ', ' : '') + csv, { shouldDirty: true })
+					}}
+					onInsertDiagnosis={(d)=> {
+						setValue('diagnosis', d || '', { shouldDirty: true })
+					}}
+				/>
 
 				<div>
 					<h3 className="font-medium mb-1">Prescriptions</h3>
