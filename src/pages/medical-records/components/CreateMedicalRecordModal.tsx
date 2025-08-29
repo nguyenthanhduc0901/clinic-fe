@@ -62,7 +62,7 @@ export default function CreateMedicalRecordModal({ open, onClose, appointmentId 
 	if (!open || !appointmentId) return null
 
 	return (
-		<Modal open onClose={onClose} title={`Tạo bệnh án từ lịch hẹn #${appointmentId}`} size="4xl">
+		<Modal open onClose={onClose} title={`Tạo bệnh án từ lịch hẹn #${appointmentId}`} size="6xl">
 			<form className="space-y-3" onSubmit={handleSubmit((v)=> mut.mutate(v))}>
 				<div className="grid grid-cols-1 md:grid-cols-3 gap-3">
 					<div className="md:col-span-2 space-y-3">

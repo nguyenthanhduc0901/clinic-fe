@@ -6,7 +6,7 @@ type Props = PropsWithChildren<{
   open: boolean
   onClose: () => void
   title?: string
-  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | 'full'
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl' | 'full'
 }>
 
 export default function Modal({ open, onClose, title, size = 'lg', children }: Props) {
@@ -17,7 +17,9 @@ export default function Modal({ open, onClose, title, size = 'lg', children }: P
     size === 'xl' ? 'max-w-xl' :
     size === '2xl' ? 'max-w-2xl' :
     size === '3xl' ? 'max-w-3xl' :
-    size === '4xl' ? 'max-w-4xl' : 'max-w-7xl'
+    size === '4xl' ? 'max-w-4xl' :
+    size === '5xl' ? 'max-w-5xl' :
+    size === '6xl' ? 'max-w-6xl' : 'max-w-7xl'
   return (
     <Transition show={open} as={Fragment}>
       <Dialog onClose={onClose} className="relative z-50">
