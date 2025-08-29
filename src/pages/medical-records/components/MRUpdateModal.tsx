@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form'
 import { useMutation } from '@tanstack/react-query'
 import { updateMedicalRecord } from '@/lib/api/medical-records'
 import { toast } from '@/components/ui/Toast'
+import DermAIAnalyzer from '@/components/ai/DermAIAnalyzer'
 
 type Values = { symptoms?: string; diagnosis?: string; diseaseTypeId?: number; reExaminationDate?: string; notes?: string; status?: 'pending' | 'completed' | 'cancelled' }
 
@@ -61,8 +62,12 @@ export default function MRUpdateModal({ id, initial, open, onClose, onUpdated }:
 				</div>
 				<div>
 					<label className="block text-sm mb-1">Ghi chú</label>
-					<input className="w-full rounded-md border px-3 py-2" {...register('notes')} />
+					<input id="notes" className="w-full rounded-md border px-3 py-2" {...register('notes')} />
 				</div>
+				<DermAIAnalyzer onInsertNote={(txt)=> {
+					const el = document.getElementById('notes') as HTMLInputElement | null
+					if (el) el.value = (el.value ? el.value + ' ' : '') + txt
+				}} />
 				<div className="text-right">
 					<button type="button" className="btn-ghost" onClick={onClose}>Huỷ</button>
 					<button className="btn-primary" disabled={mut.isPending}>Lưu</button>

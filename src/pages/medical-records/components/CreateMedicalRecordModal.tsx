@@ -9,6 +9,7 @@ import { useState } from 'react'
 import { toast } from '@/components/ui/Toast'
 import { FormField, Input } from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
+import DermAIAnalyzer from '@/components/ai/DermAIAnalyzer'
 
 type Props = { open: boolean; onClose: () => void; appointmentId: number | null }
 
@@ -27,7 +28,7 @@ export default function CreateMedicalRecordModal({ open, onClose, appointmentId 
 	const navigate = useNavigate()
 	const qc = useQueryClient()
 	const catalogs = useQuery({ queryKey: ['catalogs'], queryFn: () => getCatalogs(), staleTime: 1000 * 60 * 10 })
-	const { register, handleSubmit, control } = useForm<FormValues>({ defaultValues: { prescriptions: [{}] } })
+	const { register, handleSubmit, control, setValue, getValues } = useForm<FormValues>({ defaultValues: { prescriptions: [{}] } })
 	const { fields, append, remove } = useFieldArray({ control, name: 'prescriptions' })
 	const [q, setQ] = useState('')
 	const meds = useQuery({ queryKey: ['medicines-autocomplete', q], queryFn: () => listMedicines({ q, page: 1, limit: 10 }), enabled: q.length > 0 })
@@ -84,6 +85,11 @@ export default function CreateMedicalRecordModal({ open, onClose, appointmentId 
 						<Input id="notes" {...register('notes')} />
 					</FormField>
 				</div>
+
+				<DermAIAnalyzer onInsertNote={(txt)=> {
+					const cur = getValues('notes') || ''
+					setValue('notes', (cur ? cur + ' ' : '') + txt, { shouldDirty: true })
+				}} />
 
 				<div>
 					<h3 className="font-medium mb-1">Prescriptions</h3>
