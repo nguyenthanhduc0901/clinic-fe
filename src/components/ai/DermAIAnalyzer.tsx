@@ -9,6 +9,7 @@ export default function DermAIAnalyzer({ onInsertNote }: { onInsertNote: (note: 
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<DermPredictionResponse | null>(null)
   const abortRef = useRef<AbortController | null>(null)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
     if (!file) { setPreview(null); return }
@@ -78,10 +79,8 @@ export default function DermAIAnalyzer({ onInsertNote }: { onInsertNote: (note: 
           ) : (
             <div className="w-40 h-40 flex items-center justify-center rounded-md border text-sm text-neutral-500">Chưa chọn ảnh</div>
           )}
-          <label className="mt-2 inline-block">
-            <input type="file" accept="image/jpeg,image/png" className="hidden" onChange={handlePick} />
-            <Button type="button" variant="secondary" size="sm">Chọn ảnh</Button>
-          </label>
+          <input ref={fileInputRef} type="file" accept="image/jpeg,image/png" className="hidden" onChange={handlePick} />
+          <Button type="button" variant="secondary" size="sm" onClick={() => fileInputRef.current?.click()}>Chọn ảnh</Button>
         </div>
         <div className="flex-1 space-y-2">
           <div className="flex gap-2">
