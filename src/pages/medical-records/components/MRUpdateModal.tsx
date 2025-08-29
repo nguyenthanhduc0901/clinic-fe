@@ -5,6 +5,7 @@ import { updateMedicalRecord } from '@/lib/api/medical-records'
 import { toast } from '@/components/ui/Toast'
 import DermAIAnalyzer from '@/components/ai/DermAIAnalyzer'
 import TextAIAnalyzer from '@/components/ai/TextAIAnalyzer'
+import SpeechTranscribePanel from '@/components/ai/SpeechTranscribePanel'
 
 type Values = { symptoms?: string; diagnosis?: string; diseaseTypeId?: number; reExaminationDate?: string; notes?: string; status?: 'pending' | 'completed' | 'cancelled' }
 
@@ -69,6 +70,16 @@ export default function MRUpdateModal({ id, initial, open, onClose, onUpdated }:
 					const el = document.getElementById('notes') as HTMLInputElement | null
 					if (el) el.value = (el.value ? el.value + ' ' : '') + txt
 				}} />
+				<SpeechTranscribePanel
+					onInsertSymptoms={(csv)=> {
+						const cur = (document.querySelector('input[name="symptoms"]') as HTMLInputElement | null)?.value || ''
+						const next = (cur ? cur + ', ' : '') + csv
+						try { (document.querySelector('input[name="symptoms"]') as HTMLInputElement | null)!.value = next } catch {}
+					}}
+					onInsertDiagnosis={(d)=> {
+						try { (document.querySelector('input[name="diagnosis"]') as HTMLInputElement | null)!.value = d || '' } catch {}
+					}}
+				/>
 				<TextAIAnalyzer
 					initialTranscript={''}
 					onInsertSymptoms={(csv)=> {

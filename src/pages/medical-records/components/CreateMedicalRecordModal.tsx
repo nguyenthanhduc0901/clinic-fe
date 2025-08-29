@@ -11,6 +11,7 @@ import { FormField, Input } from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
 import DermAIAnalyzer from '@/components/ai/DermAIAnalyzer'
 import TextAIAnalyzer from '@/components/ai/TextAIAnalyzer'
+import SpeechTranscribePanel from '@/components/ai/SpeechTranscribePanel'
 
 type Props = { open: boolean; onClose: () => void; appointmentId: number | null }
 
@@ -128,6 +129,16 @@ export default function CreateMedicalRecordModal({ open, onClose, appointmentId 
 				<div className="md:col-span-1 space-y-3">
 					<div className="rounded-md border p-3 bg-white dark:bg-neutral-900">
 						<h3 className="font-medium mb-2">Hỗ trợ AI</h3>
+						<details className="mb-2" open>
+							<summary className="cursor-pointer select-none py-1 text-sm text-neutral-700 dark:text-neutral-200">Web Speech (Realtime)</summary>
+							<SpeechTranscribePanel
+								onInsertSymptoms={(csv)=> {
+									const cur = getValues('symptoms') || ''
+									setValue('symptoms', (cur ? cur + ', ' : '') + csv, { shouldDirty: true })
+								}}
+								onInsertDiagnosis={(d)=> setValue('diagnosis', d || '', { shouldDirty: true })}
+							/>
+						</details>
 						<details className="mb-2">
 							<summary className="cursor-pointer select-none py-1 text-sm text-neutral-700 dark:text-neutral-200">Phân tích da liễu (Ảnh)</summary>
 							<DermAIAnalyzer onInsertNote={(txt)=> {

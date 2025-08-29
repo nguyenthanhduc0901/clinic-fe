@@ -70,4 +70,6 @@ export async function analyzeMedicalText(payload: { text?: string; texts?: strin
   return res.json() as Promise<TextAnalyzeResponse>
 }
 
+// Removed legacy audio upload helper per new Web Speech flow
+
 
